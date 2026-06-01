@@ -1,5 +1,17 @@
 # ROGII Wellbore Geology Prediction
 
+## Git & Version Control
+
+This project uses local git (initialized at repo root). **Proactively commit after milestone achievements:**
+- New model variant with improved val RMSE
+- New feature set or significant experiment
+- New submission generated
+- Bug fixes to training/inference scripts
+- Updates to copilot-instructions.md
+
+Use semantic commit messages: `feat:`, `fix:`, `chore:`, `exp:` (experiment)  
+Always include `Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>` trailer.
+
 ## Competition Overview
 
 Kaggle competition: https://www.kaggle.com/competitions/rogii-wellbore-geology-prediction  
