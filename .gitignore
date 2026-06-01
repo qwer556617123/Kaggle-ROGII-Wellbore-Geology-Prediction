@@ -1,0 +1,27 @@
+# Competition data (large, not committed)
+train/
+test/
+
+# Feature matrices (large parquets)
+features/*.parquet
+
+# Trained models (large pkl files)
+models/*.pkl
+models/*.pt
+
+# Intermediate predictions (all except best)
+# submissions/ is committed (small CSV files, ~467KB each)
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+
+# Temp / OS
+.DS_Store
+Thumbs.db
+*.log
+
+# Kaggle credentials (never commit)
+kaggle.json
