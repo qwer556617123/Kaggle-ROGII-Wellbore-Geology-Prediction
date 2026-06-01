@@ -1,16 +1,19 @@
-# Competition data (large, not committed)
+# Competition data
 train/
 test/
+sample_submission.csv
+*.pptx
 
-# Feature matrices (large parquets)
+# Feature matrices
 features/*.parquet
 
-# Trained models (large pkl files)
+# Trained models
 models/*.pkl
 models/*.pt
+models/*.csv
 
-# Intermediate predictions (all except best)
-# submissions/ is committed (small CSV files, ~467KB each)
+# All submission/prediction CSV files
+submissions/
 
 # Python cache
 __pycache__/
