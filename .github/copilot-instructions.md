@@ -73,6 +73,7 @@ E:\Code\ROGII - Wellbore Geology Prediction\
 - **v8 val RMSE**: 15.17 ft (row-weighted), 11.98 ft (per-well mean), 7983 rounds
 - **v13_reg val RMSE**: **15.08 ft (row-weighted), 11.95 ft (per-well mean), 13077 rounds** ← BEST
 - **Final submission**: `lgbm_final_reg.csv` — v13_reg params on all 773 wells
+- **Public LB score**: **12.269 ft** (3 test wells, submitted 2026-06-01)
 
 **v13_reg key params** (v8 params changed):
 - `feature_fraction`: 0.8 → **0.7**
