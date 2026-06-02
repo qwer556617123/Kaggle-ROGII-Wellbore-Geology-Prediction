@@ -16,6 +16,8 @@ models/*.csv
 
 # All submission/prediction CSV files
 submissions/
+predictions/
+kernel_output*/
 
 # Python cache
 __pycache__/
@@ -27,6 +29,7 @@ __pycache__/
 .DS_Store
 Thumbs.db
 *.log
+*.tmp
 
 # Kaggle credentials (never commit)
 kaggle.json
