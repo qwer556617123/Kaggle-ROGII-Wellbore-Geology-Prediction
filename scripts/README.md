@@ -17,6 +17,7 @@ Until the move is completed, these root-level commands remain canonical:
 ```powershell
 python lgbm_final_reg_train.py
 python run_lgbm_on_test_csv.py
+python lgbm_v15_formation_train.py
 ```
 
-After the move, keep root-level wrappers for both commands so existing workflow and notes do not break.
+Root-level wrappers are kept for these commands so existing workflow and notes do not break.

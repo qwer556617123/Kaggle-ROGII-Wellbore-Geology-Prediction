@@ -30,6 +30,11 @@ The current benchmark is `lgbm_final_reg_train.py`, using the v13_reg parameters
 
 This is the score to beat. v20-v24 contain useful clues, but they have not replaced v13_reg as the mainline.
 
+Current competition-side parked branches:
+
+- v15: available through root wrapper `lgbm_v15_formation_train.py`, implemented at `scripts/main/lgbm_v15_formation_train.py`.
+- v6: referenced in historical instructions as `+GR matching features` with about 15.73 ft local validation, but no standalone v6 script exists in this checkout.
+
 ## Development History In One Pass
 
 - Early dTVT/increment models were weaker because errors accumulated down the post-PS interval.
@@ -40,7 +45,7 @@ This is the score to beat. v20-v24 contain useful clues, but they have not repla
 
 ## Test-Well Interpretation
 
-From `hard_well_analysis.csv`:
+From `scripts/diagnostics/hard_well_analysis.csv`:
 
 | Well | Key signals | Working interpretation |
 | --- | --- | --- |
@@ -55,20 +60,19 @@ Completed:
 - README rewritten into a readable project summary.
 - `docs/experiment_log.md` records baseline, useful clues, low-priority branches, and the required template for new experiments.
 - `docs/next_strategy.md` defines the Public LB-focused plan and guardrails.
-- `docs/file_inventory.md` maps every current root-level script to its role and planned destination.
-- `scripts/` directory scaffold created with `main/`, `experiments/`, and `diagnostics/`.
+- `docs/file_inventory.md` maps script roles and their organized locations.
+- `scripts/` contains `main/`, `experiments/`, and `diagnostics/`.
 
 Not completed:
 
-- Physical script moves are still pending because local move approval/session state blocked `Move-Item`.
-- Root-level wrappers for moved scripts are not needed yet because the scripts have not moved.
+- A standalone v6 script is not present in this checkout; v6 is documented as historical context only.
 
 ## Current Working Rules
 
 - Do not refactor model internals while score-chasing.
 - Do not start a new experiment without naming the target well and expected TVT trend change.
 - Do not globally replace v13 unless the new method explains all three test wells.
-- Keep root-level commands stable until the physical script move can be safely completed.
+- Keep root-level wrapper commands stable after physical script moves.
 
 ## Next Best Work
 

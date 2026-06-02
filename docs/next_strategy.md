@@ -6,6 +6,8 @@ The next phase is Public LB focused. That means test-well-specific analysis is a
 
 Beat the v13_reg Public LB of 12.269 without returning to broad, untracked experiment churn.
 
+Current competition-side parked branches are v15 and v6. Treat v15 as an active script path; treat v6 as historical unless a concrete v6 artifact or submission file is restored.
+
 ## Test Wells
 
 | Well | Known profile from diagnostics | Strategy angle |
@@ -41,9 +43,4 @@ Beat the v13_reg Public LB of 12.269 without returning to broad, untracked exper
 
 ## Immediate File Organization Follow-Up
 
-When local approval/session state permits file moves, complete the planned layout:
-
-- Move stable scripts into `scripts/main/`.
-- Move exploratory scripts into `scripts/experiments/`.
-- Move diagnostics and analysis outputs into `scripts/diagnostics/`.
-- Leave root-level wrappers for `lgbm_final_reg_train.py` and `run_lgbm_on_test_csv.py`.
+The physical script layout is organized under `scripts/`. Keep root-level wrappers for active commands so existing notes and shell history stay usable.
