@@ -68,10 +68,6 @@ LGBM_PARAMS = {
     "verbose":           -1,
     "seed":              42,
     "n_jobs":            -1,
-    # GPU — local training only; Kaggle kernel uses CPU
-    "device_type":       "gpu",
-    "gpu_platform_id":   0,
-    "gpu_device_id":     0,
 }
 N_ESTIMATORS          = 20000
 EARLY_STOPPING_ROUNDS = 500
@@ -235,7 +231,7 @@ val_ids    = pd.read_csv(FEAT_DIR / "val_ids.csv",   header=None)[0].tolist()
 print(f"  Loaded {len(dip_df)} wells  (r2_xy < 0.3: {(dip_df['r2_xy'] < MIN_R2_QUALITY).sum()})")
 print(f"  Train: {len(train_ids)} wells | Val: {len(val_ids)} wells")
 
-# Neighbor pool = training wells with good r2_xy
+# Neighbor pool = training wells with good r2_xy (658-pool, matching test_well_nbr_stats.json)
 train_pool = dip_df[
     dip_df["wid"].isin(train_ids) & (dip_df["r2_xy"] >= MIN_R2_QUALITY)
 ].copy().reset_index(drop=True)
