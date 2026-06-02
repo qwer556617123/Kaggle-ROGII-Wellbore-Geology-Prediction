@@ -7,7 +7,7 @@ Kaggle-style project for predicting post-Prediction-Start (post-PS) TVT values f
 - Best baseline: `lgbm_final_reg_train.py` using the v13_reg LightGBM settings.
 - Local validation: RMSE 15.08 row-weighted, 11.95 per-well mean.
 - Public LB: 12.269.
-- Current competition-side parked branches: v15 and v6. v15 is available as `lgbm_v15_formation_train.py`; v6 is recorded in historical notes but no standalone v6 script exists in this checkout.
+- Current competition reality: all tried branches are unsatisfactory. v13_reg is only the least-bad reference point, not a good solution.
 - Core target: `target_correction = true_tvt - anchored_physics`.
 - Core physics estimate: `anchor_tvt + slope * (Z - Z_anchor)`.
 - Current direction: Public LB improvement through test-well-specific analysis, but tracked in a disciplined experiment log.
@@ -38,7 +38,7 @@ submissions/lgbm_final_reg.csv
 - `docs/next_strategy.md`: next Public LB strategy and guardrails.
 - `docs/file_inventory.md`: current file roles and planned physical layout.
 - `docs/project_state.md`: concise current-state handoff for the project.
-- `scripts/main/`: active mainline, competition, inference, and Kaggle kernel scripts.
+- `scripts/main/`: stable wrappers/mainline references, inference, and Kaggle kernel scripts.
 - `scripts/experiments/`: exploratory model and feature scripts.
 - `scripts/diagnostics/`: evaluation, hard-well analysis, and submission helper scripts.
 

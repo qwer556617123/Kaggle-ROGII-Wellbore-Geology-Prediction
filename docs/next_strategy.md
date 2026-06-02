@@ -4,9 +4,7 @@ The next phase is Public LB focused. That means test-well-specific analysis is a
 
 ## Objective
 
-Beat the v13_reg Public LB of 12.269 without returning to broad, untracked experiment churn.
-
-Current competition-side parked branches are v15 and v6. Treat v15 as an active script path; treat v6 as historical unless a concrete v6 artifact or submission file is restored.
+Beat the v13_reg Public LB of 12.269 without returning to broad, untracked experiment churn. Treat all existing branches as weak until proven otherwise; none should be assumed active or promising just because it exists.
 
 ## Test Wells
 
@@ -43,4 +41,4 @@ Current competition-side parked branches are v15 and v6. Treat v15 as an active 
 
 ## Immediate File Organization Follow-Up
 
-The physical script layout is organized under `scripts/`. Keep root-level wrappers for active commands so existing notes and shell history stay usable.
+The physical script layout is organized under `scripts/`. Keep root-level wrappers for stable reference commands so existing notes and shell history stay usable.

@@ -13,8 +13,8 @@ This log keeps the project from drifting into random trial-and-error. Every expe
 | Version | Category | Main idea | Result / note | Keep going? |
 | --- | --- | --- | --- | --- |
 | v8 | Useful baseline | Anchored physics plus post-PS trajectory features | RMSE about 15.17; foundation for v13 | Yes, as reference |
-| v15 | Active competition branch | Formation top features | Parked on competition side; inspect before replacing | Yes, active |
-| v6 | Active competition branch / historical | GR matching features | Referenced in historical notes; no standalone v6 script in this checkout | Only if artifact is restored |
+| v15 | Weak branch | Formation top features | Not good enough; keep as organized reference only | No, unless a new targeted hypothesis revives it |
+| v6 | Weak historical branch | GR matching features | Not good enough; no standalone v6 script in this checkout | No, historical context only |
 | v20 | Useful clue | GR/xcorr-derived corrections and hard-well diagnostics | More diagnostic value than score value | Selectively |
 | v21 | Useful clue | GR-to-TVT features | Did not clearly beat v13 | Only if tied to a test-well hypothesis |
 | v22-v23 | Useful clue | Spatial neighbor / 3D correction features | Interesting for test-well-specific trend correction; not stable enough as mainline | Selectively |
@@ -48,6 +48,7 @@ Decision:
 
 ## Current Open Questions
 
+- What failure mode explains why all current approaches remain poor?
 - Does `00bbac68` require a stronger spatial or formation-dip correction than v13 predicts?
 - Is `000d7d20` close to a flat/anchor-like regime where aggressive corrections hurt?
 - Can `00e12e8b` use GR deviation safely without overreacting to high pre-GR variance?

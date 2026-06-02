@@ -1,6 +1,6 @@
 # File Inventory
 
-This inventory records the organized script roles. Root-level wrappers are kept only for stable or currently active commands.
+This inventory records the organized script roles. Root-level wrappers are kept for stable reference commands and convenience, not because any current branch is strong.
 
 ## Stable Mainline
 
@@ -8,10 +8,10 @@ This inventory records the organized script roles. Root-level wrappers are kept 
 | --- | --- | --- |
 | `lgbm_final_reg_train.py` | Root wrapper for final v13_reg training and submission generation | Current best baseline. |
 | `run_lgbm_on_test_csv.py` | Root wrapper for local test CSV inference / comparison helper | Currently references v23 spatial model through organized script. |
-| `lgbm_v15_formation_train.py` | Root wrapper for active v15 formation script | Parked on competition side; keep easy to run. |
+| `lgbm_v15_formation_train.py` | Root wrapper for v15 formation script | Weak reference branch; keep easy to rerun, not active. |
 | `scripts/main/lgbm_final_reg_train.py` | Final v13_reg implementation | Current best baseline implementation. |
 | `scripts/main/run_lgbm_on_test_csv.py` | Local test CSV inference implementation | Useful for inspecting Kaggle-like predictions. |
-| `scripts/main/lgbm_v15_formation_train.py` | v15 formation implementation | Active competition branch. |
+| `scripts/main/lgbm_v15_formation_train.py` | v15 formation implementation | Weak reference branch. |
 | `scripts/main/kaggle_kernel_inference.py` | Kaggle inference script | Uses precomputed v23 spatial model metadata and neighbor stats. |
 | `scripts/main/kaggle_kernel_v3.py` | Kaggle kernel variant | Historical kernel packaging; keep with main/kernel scripts. |
 
@@ -76,7 +76,8 @@ This inventory records the organized script roles. Root-level wrappers are kept 
 
 ## Competition Branch Notes
 
-- v15 is active and has a root wrapper plus implementation under `scripts/main/`.
-- v6 is referenced by project history but has no standalone script in this checkout.
+- No current branch is considered strong. v13_reg is the least-bad baseline.
+- v15 has a root wrapper plus implementation under `scripts/main/`, but is only a weak reference branch.
+- v6 is referenced by project history but has no standalone script in this checkout and should be treated as weak historical context.
 
 Do not change model logic during file organization. Post-move checks should verify that stable root wrappers still resolve.

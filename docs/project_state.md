@@ -28,12 +28,7 @@ The current benchmark is `lgbm_final_reg_train.py`, using the v13_reg parameters
 - local per-well mean RMSE: 11.95;
 - Public LB: 12.269.
 
-This is the score to beat. v20-v24 contain useful clues, but they have not replaced v13_reg as the mainline.
-
-Current competition-side parked branches:
-
-- v15: available through root wrapper `lgbm_v15_formation_train.py`, implemented at `scripts/main/lgbm_v15_formation_train.py`.
-- v6: referenced in historical instructions as `+GR matching features` with about 15.73 ft local validation, but no standalone v6 script exists in this checkout.
+This is the reference point to beat, but it should not be treated as a good solution. Current competition reality is that all tried branches are poor; v13_reg is only the least-bad organized baseline.
 
 ## Development History In One Pass
 
@@ -65,7 +60,7 @@ Completed:
 
 Not completed:
 
-- A standalone v6 script is not present in this checkout; v6 is documented as historical context only.
+- No current script or branch should be treated as an active strong candidate. Existing scripts are organized references until a better strategy is designed.
 
 ## Current Working Rules
 
