@@ -6,6 +6,8 @@ sample_submission.csv
 
 # Feature matrices
 features/*.parquet
+features/*.pkl
+features/*.csv
 
 # Trained models
 models/*.pkl
@@ -28,3 +30,6 @@ Thumbs.db
 
 # Kaggle credentials (never commit)
 kaggle.json
+
+# Local temporary agent planning file
+.github/agents/Plan.agent.md
