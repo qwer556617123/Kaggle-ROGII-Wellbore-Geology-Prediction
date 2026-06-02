@@ -1,0 +1,18 @@
+{
+  "id": "qwer556617123/rogii-train-lookup-v3",
+  "title": "rogii-train-lookup-v3",
+  "code_file": "rogii-train-lookup-v3.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": false,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "keywords": [],
+  "dataset_sources": [],
+  "kernel_sources": [],
+  "competition_sources": [
+    "rogii-wellbore-geology-prediction"
+  ],
+  "model_sources": []
+}
