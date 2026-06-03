@@ -17,6 +17,7 @@ models/*.csv
 # All submission/prediction CSV files
 submissions/
 predictions/
+reports/
 kernel_output*/
 
 # Python cache

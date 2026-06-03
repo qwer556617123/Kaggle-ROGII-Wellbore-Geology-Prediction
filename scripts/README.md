@@ -1,14 +1,13 @@
 # Script Layout
 
-This directory is the planned home for project scripts once local move approval is available.
-
 ## Intended Categories
 
-- `main/`: stable training, inference, and Kaggle kernel scripts.
-- `experiments/`: exploratory model and feature scripts.
-- `diagnostics/`: evaluation, hard-well analysis, and inspection helpers.
+- `main/`: stable training, inference, and Kaggle kernel references.
+- `diagnostics/`: active evaluation and validation gates.
+- `experiments/`: active experiments only.
+- `archive/`: deprecated, weak, or historical scripts.
 
-See `docs/file_inventory.md` for the current root-level file classification and the planned move map.
+See `docs/file_inventory.md` for the current root-level file classification and archive policy.
 
 ## Stable Root Entrypoints
 

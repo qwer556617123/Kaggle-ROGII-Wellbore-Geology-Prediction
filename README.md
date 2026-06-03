@@ -1,20 +1,20 @@
 # ROGII Wellbore Geology Prediction
 
-Kaggle-style project for predicting post-Prediction-Start (post-PS) TVT values for three horizontal wells from trajectory, GR logs, typewell curves, and pre-PS TVT input.
+This repository is for the ROGII Wellbore Geology Prediction competition. The current goal is not to keep adding random model variants; it is to keep a small active workspace, validate locally before spending submissions, and only revive archived ideas with a concrete hypothesis.
 
-## Current Status
+## Current Baselines
 
-- Best baseline: `lgbm_final_reg_train.py` using the v13_reg LightGBM settings.
-- Local validation: RMSE 15.08 row-weighted, 11.95 per-well mean.
-- Public LB: 12.269.
-- Current competition reality: all tried branches are unsatisfactory. v13_reg is only the least-bad reference point, not a good solution.
-- Core target: `target_correction = true_tvt - anchored_physics`.
-- Core physics estimate: `anchor_tvt + slope * (Z - Z_anchor)`.
-- Current direction: Public LB improvement through test-well-specific analysis, but tracked in a disciplined experiment log.
+| Method | Local signal | Public LB | Status |
+| --- | ---: | ---: | --- |
+| v23 spatial 3D correction | val around 14.06 in notes | 12.044 | Best known official baseline |
+| v13_reg final LGBM | row RMSE 15.08, per-well 11.95 | 12.269 | Stable reference |
+| train lookup | visible-ID oracle looked perfect | 15.883 | Not a valid oracle |
 
-## Main Commands
+Current conclusion: all existing branches are weak. v23 is the best known official baseline, but small retrain/data-pool changes have produced much worse LB scores.
 
-These commands are intentionally kept as the stable root-level entry points until the script move can be completed:
+## Active Commands
+
+Root wrappers are kept for the main commands:
 
 ```powershell
 python lgbm_final_reg_train.py
@@ -22,46 +22,33 @@ python run_lgbm_on_test_csv.py
 python lgbm_v15_formation_train.py
 ```
 
-Expected output from the final baseline training script:
+Use local CV before spending daily submissions:
 
-```text
-models/lgbm_final_reg.pkl
-submissions/lgbm_final_reg.csv
+```powershell
+python scripts\diagnostics\cv_attenuated_physics.py --folds 5 --seed 42
 ```
 
-## Project Map
+## Project Layout
 
-- `train/`, `test/`: local competition data.
-- `features/`: checked-in lightweight feature metadata plus ignored generated feature artifacts.
-- `models/`, `submissions/`: generated outputs, ignored by git.
-- `docs/experiment_log.md`: version history and experiment classification.
-- `docs/next_strategy.md`: next Public LB strategy and guardrails.
-- `docs/file_inventory.md`: current file roles and planned physical layout.
-- `docs/project_state.md`: concise current-state handoff for the project.
-- `scripts/main/`: stable wrappers/mainline references, inference, and Kaggle kernel scripts.
-- `scripts/experiments/`: exploratory model and feature scripts.
-- `scripts/diagnostics/`: evaluation, hard-well analysis, and submission helper scripts.
+- `scripts/main/`: stable mainline, inference, and Kaggle kernel references.
+- `scripts/diagnostics/`: active diagnostics and validation gates.
+- `scripts/experiments/`: active experimental scripts only.
+- `scripts/archive/`: deprecated or low-priority scripts kept for history.
+- `docs/`: project state, experiment findings, CV-vs-LB notes, and strategy.
+- `features/`: small checked-in metadata; generated features are ignored.
+- `submissions/`, `models/`, `predictions/`, `reports/`: generated outputs, ignored by git.
 
-## Version Summary
+## Active Validation Notes
 
-- v1-v4: dTVT/increment modeling; validation around RMSE 17-19 with accumulation issues.
-- v5: switched to correction modeling; validation improved to about RMSE 15.76.
-- v8: anchored physics plus post-PS trajectory features; validation about RMSE 15.17.
-- v13_reg: stronger regularization and fixed final training; current best baseline.
-- v14-v24: KNN, formation, xcorr, spatial, GR deviation, and hard-well experiments; useful clues but not yet a stable replacement for v13_reg.
+- Do not use the three visible test IDs as official oracle truth.
+- Held-out well CV is useful for rejecting bad ideas, but current evidence shows it does not fully predict Public LB.
+- Any candidate should either beat v13-like CV behavior or reproduce/improve the v23 12.044 path before using submission quota.
 
-## Current Rules
+## Archive Policy
 
-- Use well-level validation, not row-level random splitting.
-- Keep v13_reg as the benchmark until a method clearly improves either validation evidence or Public LB.
-- Every new experiment must record:
-  - which test well it is meant to fix;
-  - expected TVT trend change;
-  - expected delta versus v13;
-  - validation or LB result;
-  - whether it should be continued.
+Archived scripts should stay archived unless they have:
 
-## Notes
-
-- The root script move is planned but currently blocked by the local approval/session state. Until that is resolved, the stable root-level commands remain the source of truth.
-- Avoid broad refactoring during score-chasing. The near-term project risk is scattered experimentation, not shared utility duplication.
+- a named failure mode;
+- a target validation gate;
+- an expected Public LB effect;
+- a clear reason they are better than the current v23/v13 references.
