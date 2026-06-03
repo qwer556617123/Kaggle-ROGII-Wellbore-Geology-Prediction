@@ -9,3 +9,5 @@ version,method,description,local_signal_name,local_signal_value,public_lb,notes
 local,attenuation_anchor,"held-out CV anchor alpha=0.000",cv_row_rmse,15.83,,"local gate only"
 local,attenuation_learned,"held-out CV learned global alpha",cv_row_rmse,15.80,,"local gate only"
 local,attenuation_alpha_0p07,"held-out CV fixed alpha=0.070",cv_row_rmse,16.82,,"local gate only; no accepted LB submission"
+notebook_v11,v13_beta_0p80_notebook,"v13-like LGBM notebook, anchor blend beta 0.80, 1254 rounds",cv_rank_replay_row_rmse,13.782,12.548,"Kaggle notebook version 11, ref 53338095"
+notebook_v12,v13_beta_0p75_notebook,"v13-like LGBM notebook, anchor blend beta 0.75, 1254 rounds",cv_rank_replay_row_rmse,13.797,12.650,"Kaggle notebook version 12, ref 53338233"

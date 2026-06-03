@@ -47,7 +47,9 @@ def main() -> None:
     df = pd.read_csv(LB_PATH)
     scored = df[df["public_lb"].notna()].copy()
 
-    comparable = scored[scored["local_signal_name"].isin(["val_rmse", "cv_row_rmse"])].copy()
+    comparable = scored[
+        scored["local_signal_name"].isin(["val_rmse", "cv_row_rmse", "cv_rank_replay_row_rmse"])
+    ].copy()
     val_rmse = scored[scored["local_signal_name"] == "val_rmse"].copy()
     all_local = scored[scored["local_signal_value"].notna()].copy()
 

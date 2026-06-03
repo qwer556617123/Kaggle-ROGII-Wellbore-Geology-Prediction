@@ -1,5 +1,7 @@
 version,method,local_signal_name,local_signal_value,public_lb,local_rank,lb_rank,abs_rank_error,notes
-6,v23_gpu_retrain,val_rmse,14.1,17.221,3.0,4.0,1.0,local val looked plausible but LB poor
-4,v23_spatial_original,val_rmse,14.06,12.044,2.0,1.0,1.0,best known official baseline
-2,train_lookup_v3,visible_id_oracle,0.0,15.883,1.0,3.0,2.0,proves visible-ID truth is not official oracle
-3,v13_reg,val_rmse,15.08,12.269,4.0,2.0,2.0,stable least-bad baseline
+6,v23_gpu_retrain,val_rmse,14.1,17.221,5.0,6.0,1.0,local val looked plausible but LB poor
+4,v23_spatial_original,val_rmse,14.06,12.044,4.0,1.0,3.0,best known official baseline
+2,train_lookup_v3,visible_id_oracle,0.0,15.883,1.0,5.0,4.0,proves visible-ID truth is not official oracle
+3,v13_reg,val_rmse,15.08,12.269,6.0,2.0,4.0,stable least-bad baseline
+notebook_v11,v13_beta_0p80_notebook,cv_rank_replay_row_rmse,13.782,12.548,2.0,3.0,1.0,"Kaggle notebook version 11, ref 53338095"
+notebook_v12,v13_beta_0p75_notebook,cv_rank_replay_row_rmse,13.797,12.65,3.0,4.0,1.0,"Kaggle notebook version 12, ref 53338233"

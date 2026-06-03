@@ -1,6 +1,6 @@
 # Ranked LGBM Candidates
 
-Last updated: 2026-06-03
+Last updated: 2026-06-04
 
 ## Selected Candidates
 
@@ -14,6 +14,8 @@ Both use the v13-like feature set and LightGBM regularization, trained on all 77
 ```text
 final_tvt = anchor + beta * (lgbm_tvt - anchor)
 ```
+
+For leaderboard submission this competition requires a completed Kaggle Notebook version, not direct CSV upload. The notebook script lives in `kaggle/rogii-lgbm-final-submit/`.
 
 ## Local Evidence
 
@@ -62,3 +64,14 @@ Submit in this order:
 2. `submissions/v13_beta_0p75.csv`
 
 Rationale: beta 0.80 is best by row RMSE; beta 0.75 is nearly tied and best by per-well RMSE among the top two.
+
+## Kaggle Notebook Submissions
+
+| Candidate | Notebook version | Kaggle ref | Status | Public LB |
+| --- | ---: | ---: | --- | ---: |
+| v13_beta_0p80 | 11 | 53338095 | COMPLETE | 12.548 |
+| v13_beta_0p75 | 12 | 53338233 | COMPLETE | 12.650 |
+
+Direct CSV upload returned HTTP 400 because the competition expects notebook-version submission.
+
+Result: neither ranked blend beat the known v13_reg 12.269 or v23 spatial 12.044 baselines. The beta sweep moved in the wrong LB direction: beta 0.75 was slightly better by pseudo-CV per-well RMSE, but worse on Public LB than beta 0.80.

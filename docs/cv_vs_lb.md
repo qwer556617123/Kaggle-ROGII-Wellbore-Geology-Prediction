@@ -1,6 +1,6 @@
 # CV vs Leaderboard Alignment
 
-Last updated: 2026-06-03
+Last updated: 2026-06-04
 
 Daily submissions are limited, so local validation must be used as a ranking gate. The goal is not to predict the exact Public LB value; it is to check whether local CV ranks candidate methods in roughly the same order as LB.
 
@@ -30,8 +30,8 @@ Current summary:
 | Comparison | n | Spearman | Kendall | Avg abs rank error | Takeaway |
 | --- | ---: | ---: | ---: | ---: | --- |
 | val_rmse only | 3 | 0.50 | 0.33 | 0.67 | closest current proxy, but too small for hard tuning |
-| comparable CV-like signals | 3 | 0.50 | 0.33 | 0.67 | directional only |
-| all local signals | 4 | 0.00 | 0.00 | 1.50 | contaminated by visible-ID oracle |
+| comparable CV-like signals | 5 | -0.10 | 0.00 | 2.00 | now fails rank alignment after the two notebook submissions |
+| all local signals | 6 | -0.26 | -0.20 | 2.33 | contaminated by visible-ID oracle |
 
 Generated files:
 
@@ -80,12 +80,19 @@ Important: this replay is a local pseudo-test ranking tool. It does not by itsel
 
 The later blend confirmation is tracked in `docs/cv_lgbm_rank_replay_blend_confirm_summary.csv`. It selected `v13_beta_0p80` and `v13_beta_0p75` as the first two submission candidates. See `docs/ranked_lgbm_candidates.md`.
 
+Notebook submission result so far:
+
+- `v13_beta_0p80`: Public LB 12.548, worse than v13_reg 12.269 and v23 12.044.
+- `v13_beta_0p75`: Public LB 12.650, worse than beta 0.80.
+
+This confirms that the pseudo-test CV ranking is useful for selecting plausible conservative variants, but still does not fully align with Public LB.
+
 ## Alignment Judgment
 
 Current verdict:
 
 - CV should be judged mainly by rank alignment against LB, especially Spearman/Kendall.
-- Current rank alignment is weak-to-moderate, not complete.
+- Current rank alignment is poor after the two notebook submissions.
 - CV is still valid as a rejection gate.
 - A candidate that only looks good on visible-ID train truth should be rejected.
 - A candidate that beats CV but cannot reproduce the exact v23 12.044 path should still be treated cautiously.
