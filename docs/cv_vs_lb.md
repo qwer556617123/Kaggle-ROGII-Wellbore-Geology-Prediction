@@ -4,6 +4,8 @@ Last updated: 2026-06-03
 
 Daily submissions are limited, so local validation must be used as a ranking gate. The goal is not to predict the exact Public LB value; it is to check whether local CV ranks candidate methods in roughly the same order as LB.
 
+When this document says the sample is small, it means the number of leaderboard submissions that also have a comparable local score is small. There are seven submitted leaderboard rows, but only a few currently have a normal validation metric recorded, and the train-lookup row is a different signal type. It should not be mixed with ordinary CV scores.
+
 ## Known LB Results
 
 See `docs/lb_history.csv` for the tracked table.
@@ -49,6 +51,32 @@ Held-out attenuation CV over all 773 train wells:
 | raw physics alpha 1.000 | 108.99 | 95.66 |
 
 This rejects raw physics and weak attenuation variants, but it does not explain why v23 original got 12.044 while v23 retrains got 17+.
+
+## Pseudo-Test Rank Replay
+
+Run:
+
+```powershell
+python scripts\diagnostics\cv_lgbm_rank_replay.py --folds 3 --row-stride 10 --max-rounds 800 --early-stopping 80 --out-prefix reports\cv_lgbm_rank_replay_pilot
+```
+
+This uses all 773 train wells, split by well id, with every 10th post-PS row kept for a faster pilot. It gives many pseudo-test wells instead of only the three official test wells.
+
+Pilot aggregate:
+
+| Method | Row RMSE | Per-well RMSE | Interpretation |
+| --- | ---: | ---: | --- |
+| pseudo_oracle_lookup | 0.00 | 0.00 | contamination check only |
+| lgbm_v13_like_base | 13.90 | 11.27 | best pilot rank |
+| lgbm_v8_like_base | 14.02 | 11.39 | close to v13-like |
+| lgbm_extra_features | 14.21 | 11.43 | extra features did not help in this pilot |
+| anchor | 15.87 | 12.81 | strong simple baseline |
+| alpha_0p07 | 16.85 | 13.81 | worse than anchor here |
+| physics | 109.01 | 95.62 | rejected |
+
+Tracked summary: `docs/cv_lgbm_rank_replay_pilot_summary.csv`.
+
+Important: this replay is a local pseudo-test ranking tool. It does not by itself prove the Public LB order, but it provides more local ranking samples than the official test set.
 
 ## Alignment Judgment
 

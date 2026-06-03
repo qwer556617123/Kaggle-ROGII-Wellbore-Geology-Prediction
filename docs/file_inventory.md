@@ -31,6 +31,7 @@ Active diagnostics and validation gates:
 
 - `cv_attenuated_physics.py`: held-out well CV for anchor/attenuation baselines.
 - `evaluate_cv_lb_alignment.py`: quick check of whether local signals track Public LB.
+- `cv_lgbm_rank_replay.py`: grouped pseudo-test replay for candidate rank checks.
 - `hard_well_analysis.csv`: hard-well and visible test-well profile summary.
 
 ### `scripts/experiments/`
