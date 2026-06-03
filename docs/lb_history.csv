@@ -1,0 +1,11 @@
+version,method,description,local_signal_name,local_signal_value,public_lb,notes
+9,v23_cpu_773_pool,"v23 773-pool CPU best_iter=5011 + consistent 773-pool test stats",unknown,,17.482,"same LB as version 8"
+8,v23_cpu_retrain_773_pool,"v23 CPU retrain best_iter=1186 + 773-pool fix",unknown,,17.482,"same LB as version 9"
+7,v23_gpu_full_pool,"v23-GPU model + full 773-well pool neighbor stats fix",val_rmse,,17.221,"expected restore of 12.044 did not happen"
+6,v23_gpu_retrain,"v23 GPU-retrained + pool-mismatch fix",val_rmse,14.10,17.221,"local val looked plausible but LB poor"
+4,v23_spatial_original,"v23 spatial 3D correction with v8 hyperparams",val_rmse,14.06,12.044,"best known official baseline"
+2,train_lookup_v3,"direct TVT from training data for 3 visible test wells",visible_id_oracle,0.0,15.883,"proves visible-ID truth is not official oracle"
+3,v13_reg,"lgbm_final_reg reference",val_rmse,15.08,12.269,"stable least-bad baseline"
+local,attenuation_anchor,"held-out CV anchor alpha=0.000",cv_row_rmse,15.83,,"local gate only"
+local,attenuation_learned,"held-out CV learned global alpha",cv_row_rmse,15.80,,"local gate only"
+local,attenuation_alpha_0p07,"held-out CV fixed alpha=0.070",cv_row_rmse,16.82,,"local gate only; no accepted LB submission"
