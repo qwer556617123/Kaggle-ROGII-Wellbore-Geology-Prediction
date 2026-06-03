@@ -22,6 +22,7 @@ Stable references and inference entrypoints:
 - `lgbm_final_reg_train.py`
 - `run_lgbm_on_test_csv.py`
 - `lgbm_v15_formation_train.py`
+- `train_ranked_lgbm_candidates.py`
 - `kaggle_kernel_inference.py`
 - `kaggle_kernel_v3.py`
 

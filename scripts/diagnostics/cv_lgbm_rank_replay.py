@@ -96,6 +96,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--row-stride", type=int, default=1, help="Keep every Nth row per well for faster pilot runs.")
     parser.add_argument("--limit-wells", type=int, help="Optional smoke-test limit after sorting well ids.")
     parser.add_argument("--smooth-sigma", type=float, default=1.0)
+    parser.add_argument(
+        "--blend-betas",
+        default="0.6,0.8,1.0,1.1",
+        help="Comma-separated betas for anchor + beta * (prediction - anchor).",
+    )
     parser.add_argument("--out-prefix", type=Path, default=REPORT_DIR / "cv_lgbm_rank_replay")
     return parser.parse_args()
 
@@ -226,8 +231,23 @@ def aggregate(rows: pd.DataFrame) -> pd.DataFrame:
     )
 
 
+def parse_betas(raw: str) -> list[float]:
+    betas = []
+    for part in raw.split(","):
+        part = part.strip()
+        if part:
+            betas.append(float(part))
+    return list(dict.fromkeys(betas))
+
+
+def blend_name(method: str, beta: float) -> str:
+    text = f"{beta:.2f}".rstrip("0").rstrip(".").replace(".", "p")
+    return method if abs(beta - 1.0) < 1e-12 else f"{method}_anchor_beta_{text}"
+
+
 def main() -> None:
     args = parse_args()
+    blend_betas = parse_betas(args.blend_betas)
     df = load_frame(args.feature_path, args.row_stride, args.limit_wells)
     wells = np.array(sorted(df["well_id"].unique()))
     if len(wells) < args.folds:
@@ -282,16 +302,21 @@ def main() -> None:
                 args.smooth_sigma,
                 args.seed + fold,
             )
-            row, per_well = score_predictions(valid, pred, spec.method, fold)
-            row["best_iter"] = best_iter
-            row["valid_correction_rmse"] = val_corr_rmse
-            row["n_features"] = len(features)
-            rows.append(row)
-            per_well_frames.append(per_well)
-            print(
-                f"  {spec.method:<22} row_rmse={row['row_rmse']:.4f} "
-                f"per_well={row['per_well_rmse']:.4f} iter={best_iter}"
-            )
+            anchor = valid[ANCHOR].to_numpy(dtype=float)
+            for beta in blend_betas:
+                blended = anchor + beta * (pred - anchor)
+                method = blend_name(spec.method, beta)
+                row, per_well = score_predictions(valid, blended, method, fold)
+                row["best_iter"] = best_iter
+                row["valid_correction_rmse"] = val_corr_rmse
+                row["n_features"] = len(features)
+                row["blend_beta"] = beta
+                rows.append(row)
+                per_well_frames.append(per_well)
+                print(
+                    f"  {method:<38} row_rmse={row['row_rmse']:.4f} "
+                    f"per_well={row['per_well_rmse']:.4f} iter={best_iter}"
+                )
 
     summary = pd.DataFrame(rows)
     aggregate_df = aggregate(summary)

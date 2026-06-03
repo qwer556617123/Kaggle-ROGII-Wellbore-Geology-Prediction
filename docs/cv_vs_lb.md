@@ -78,6 +78,8 @@ Tracked summary: `docs/cv_lgbm_rank_replay_pilot_summary.csv`.
 
 Important: this replay is a local pseudo-test ranking tool. It does not by itself prove the Public LB order, but it provides more local ranking samples than the official test set.
 
+The later blend confirmation is tracked in `docs/cv_lgbm_rank_replay_blend_confirm_summary.csv`. It selected `v13_beta_0p80` and `v13_beta_0p75` as the first two submission candidates. See `docs/ranked_lgbm_candidates.md`.
+
 ## Alignment Judgment
 
 Current verdict:

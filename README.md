@@ -26,6 +26,8 @@ Use local CV before spending daily submissions:
 
 ```powershell
 python scripts\diagnostics\cv_attenuated_physics.py --folds 5 --seed 42
+python scripts\diagnostics\cv_lgbm_rank_replay.py --folds 3 --row-stride 10 --max-rounds 2000 --early-stopping 150
+python scripts\main\train_ranked_lgbm_candidates.py
 ```
 
 ## Project Layout
