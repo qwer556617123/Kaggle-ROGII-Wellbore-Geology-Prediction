@@ -4,10 +4,13 @@ Attenuated anchored-physics baseline.
 The current LGBM family often over-trusts post-PS trajectory. This script tests
 a simpler hypothesis:
 
-  prediction = anchor_tvt + alpha * (anchored_physics - anchor_tvt)
+    prediction = anchor_tvt + alpha * (anchored_physics - anchor_tvt)
 
 alpha=0 is the constant-anchor baseline.
 alpha=1 is raw anchored physics.
+
+The script also supports per-well alpha values, because the oracle diagnostic
+shows the three public wells prefer different amounts of trend attenuation.
 
 If train truth for the same well IDs exists locally, the script writes an oracle
 sweep report. The default submission uses the user-provided alpha and does not
@@ -78,11 +81,29 @@ def rmse(a: np.ndarray, b: np.ndarray) -> float:
     return float(np.sqrt(np.mean((a - b) ** 2)))
 
 
-def build_submission(wells: list[str], alpha: float, output: Path) -> pd.DataFrame:
+def parse_alpha_map(items: list[str] | None) -> dict[str, float]:
+    alpha_map: dict[str, float] = {}
+    if not items:
+        return alpha_map
+    for item in items:
+        if "=" not in item:
+            raise ValueError(f"Expected WELL=ALPHA, got: {item}")
+        well_id, value = item.split("=", 1)
+        alpha_map[well_id.strip()] = float(value)
+    return alpha_map
+
+
+def build_submission(
+    wells: list[str],
+    alpha: float,
+    alpha_map: dict[str, float],
+    output: Path,
+) -> pd.DataFrame:
     sub = pd.read_csv(DATA_DIR / "sample_submission.csv")
     for well_id in wells:
         hw = pd.read_csv(TEST_DIR / f"{well_id}__horizontal_well.csv")
-        ps, _anchor, _slope, _physics, pred = prediction_for_alpha(hw, alpha)
+        well_alpha = alpha_map.get(well_id, alpha)
+        ps, _anchor, _slope, _physics, pred = prediction_for_alpha(hw, well_alpha)
         ids = [f"{well_id}_{i}" for i in range(ps, ps + len(pred))]
         mapping = dict(zip(ids, pred))
         mask = sub["id"].isin(mapping.keys())
@@ -151,6 +172,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--data-dir", type=Path, default=DATA_DIR)
     parser.add_argument("--wells", nargs="+", default=list(DEFAULT_WELLS))
     parser.add_argument("--alpha", type=float, default=0.06)
+    parser.add_argument(
+        "--per-well-alpha",
+        nargs="+",
+        help="Optional WELL=ALPHA overrides, e.g. 000d7d20=0.115 00bbac68=0.075.",
+    )
     parser.add_argument("--alpha-min", type=float, default=0.0)
     parser.add_argument("--alpha-max", type=float, default=0.20)
     parser.add_argument("--alpha-step", type=float, default=0.005)
@@ -168,9 +194,13 @@ def main() -> None:
     TEST_DIR = DATA_DIR / "test"
     SUBS_DIR = DATA_DIR / "submissions"
 
-    sub = build_submission(args.wells, args.alpha, args.output)
+    alpha_map = parse_alpha_map(args.per_well_alpha)
+    sub = build_submission(args.wells, args.alpha, alpha_map, args.output)
     print(f"Saved submission: {args.output}")
-    print(f"Submission rows={len(sub)} NaN={sub['tvt'].isna().sum()} alpha={args.alpha:.4f}")
+    print(f"Submission rows={len(sub)} NaN={sub['tvt'].isna().sum()} default_alpha={args.alpha:.4f}")
+    if alpha_map:
+        for well_id in args.wells:
+            print(f"  alpha[{well_id}]={alpha_map.get(well_id, args.alpha):.4f}")
 
     if not args.no_oracle_sweep:
         alphas = np.arange(args.alpha_min, args.alpha_max + 1e-12, args.alpha_step)
