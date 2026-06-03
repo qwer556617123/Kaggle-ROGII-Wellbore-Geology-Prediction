@@ -75,3 +75,19 @@ Use v23 spatial 12.044 as the official best known baseline, not local oracle RMS
 - reproducing the exact v23 12.044 submission path;
 - comparing v23 output trend against attenuated-physics output;
 - building a conservative blend around v23, not around train lookup truth.
+
+## Local CV Simulation
+
+`scripts/diagnostics/cv_attenuated_physics.py` runs held-out well CV using only pre-PS `TVT_input` to predict post-PS TVT. This is the local simulation to use before spending submission quota.
+
+Initial 5-fold result over all 773 train wells:
+
+| Method | Row RMSE mean | Per-well RMSE mean |
+| --- | ---: | ---: |
+| learned global alpha | 15.80 | 12.79 |
+| alpha 0.000 (anchor) | 15.83 | 12.81 |
+| alpha 0.040 | 15.96 | 13.02 |
+| alpha 0.070 | 16.82 | 13.82 |
+| raw physics alpha 1.000 | 108.99 | 95.66 |
+
+Conclusion: broad CV prefers near-anchor behavior, not the per-well oracle alphas. Use attenuation as a sanity baseline, not as a final LB strategy. Any future candidate should beat this CV harness before consuming Kaggle submissions.
