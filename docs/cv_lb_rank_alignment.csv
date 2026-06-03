@@ -1,0 +1,5 @@
+version,method,local_signal_name,local_signal_value,public_lb,local_rank,lb_rank,abs_rank_error,notes
+6,v23_gpu_retrain,val_rmse,14.1,17.221,3.0,4.0,1.0,local val looked plausible but LB poor
+4,v23_spatial_original,val_rmse,14.06,12.044,2.0,1.0,1.0,best known official baseline
+2,train_lookup_v3,visible_id_oracle,0.0,15.883,1.0,3.0,2.0,proves visible-ID truth is not official oracle
+3,v13_reg,val_rmse,15.08,12.269,4.0,2.0,2.0,stable least-bad baseline

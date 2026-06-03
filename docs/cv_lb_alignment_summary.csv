@@ -1,4 +1,6 @@
-comparison,n,pearson,spearman,takeaway
-all_rows_with_local_signal_and_lb,4,-0.4176864795923407,0.0,too few and mixed signals; do not trust exact LB prediction
-v23_variants,5,,,"v23 variants range from 12.044 to 17.482 LB, so implementation/data-pool details dominate simple validation notes"
-current_gate,10,,,"CV is useful as a rejection gate, but not sufficient as an LB predictor. Candidates should beat CV gates and reproduce the exact v23 12.044 path."
+comparison,n,pearson,spearman,kendall,avg_abs_rank_error,exact_rank_match,takeaway
+val_rmse_only,3,-0.4354298871718767,0.5,0.33333333333333337,0.6666666666666666,False,"closest current proxy for CV/LB ordering, but n is too small to tune parameters hard"
+comparable_cv_like_signals,3,-0.4354298871718767,0.5,0.33333333333333337,0.6666666666666666,False,"rank signal after excluding visible-ID oracle; useful directionally, still under-sampled"
+all_local_signals,4,-0.4176864795923407,0.0,0.0,1.5,False,"includes mixed signal types such as visible-ID oracle, so treat as a contamination check"
+v23_variants,5,,,,,,"v23 variants range from 12.044 to 17.482 LB, so implementation/data-pool details dominate simple validation notes"
+current_gate,10,,,,,,"Use CV primarily to rank candidates. If repeated LB-backed rows fail to align, fall back to standard well-level CV settings instead of over-tuning."
