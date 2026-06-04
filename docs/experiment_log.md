@@ -21,6 +21,20 @@ This log keeps the project from drifting into random trial-and-error. Every expe
 | v24 | Useful clue | GR deviation rolling and trend features | Hypothesis useful, score not yet proven | Selectively |
 | `hard_well_analysis.csv` | Diagnostic | Compares hard validation wells with test wells | Useful for matching target failure modes | Yes |
 
+## PF-Family Public Notebook Track
+
+These experiments are inspired by the public physical/PF notebooks. Local CV uses train wells as pseudo-hidden wells by scoring the original `TVT_input` tail against `TVT`; the default cut below is 36 `lb_like` wells, 24 PF seeds, and 120 particles.
+
+| Experiment | Main idea | Local result | Public LB | Decision |
+| --- | --- | --- | --- | --- |
+| `public_selector` | Reproduce the PF scale / beam / hold selector style as a stable baseline | row RMSE 7.255, per-well mean 6.252 | pending, ref 53344707 | Submit and use as PF baseline |
+| `grid_s3_b0_h0p2` | Fixed PF scale 3 with 0 beam and 0.20 anchor hold | row RMSE 7.134, per-well mean 6.098 | pending, ref 53344688 | Submit as best local fixed-weight candidate |
+| `uncertainty_selector` | Dynamic hold/beam weights from PF uncertainty and GR missingness | row RMSE 7.618, per-well mean 6.326 | not submitted | Hold; did not beat public selector locally |
+| `path_rerank` | PF path library reranked by full-sequence GR score | row RMSE 11.573, per-well mean 7.793; one well failed badly | pending, ref 53339812 | Do not extend unless LB surprises |
+| `event_beam` | Event-weighted beam plus PF blend | smoke row RMSE 12.184 on 18 wells | not submitted | Drop for now |
+
+Top selector-grid rows are recorded in `docs/pf_selector_grid_summary.csv`; per-well detail is in `docs/pf_selector_grid_details.csv`.
+
 ## Low Priority Branches
 
 | Version / script | Why low priority |
@@ -49,6 +63,7 @@ Decision:
 ## Current Open Questions
 
 - What failure mode explains why all current approaches remain poor?
+- Does PF-style CV align better with LB than prior LGBM CV? The public-selector submission will calibrate this.
 - Does `00bbac68` require a stronger spatial or formation-dip correction than v13 predicts?
 - Is `000d7d20` close to a flat/anchor-like regime where aggressive corrections hurt?
 - Can `00e12e8b` use GR deviation safely without overreacting to high pre-GR variance?

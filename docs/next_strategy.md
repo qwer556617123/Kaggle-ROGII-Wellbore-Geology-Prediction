@@ -6,6 +6,8 @@ The next phase is Public LB focused. That means test-well-specific analysis is a
 
 Beat the v13_reg Public LB of 12.269 without returning to broad, untracked experiment churn. Treat all existing branches as weak until proven otherwise; none should be assumed active or promising just because it exists.
 
+The current best public clue is PF/physical modeling rather than another global LGBM feature sweep. Local PF CV is now the primary gate for this branch: it is allowed to select candidates, but LB is still needed to calibrate because the competition reruns notebooks on hidden substituted test data.
+
 ## Test Wells
 
 | Well | Known profile from diagnostics | Strategy angle |
@@ -16,18 +18,28 @@ Beat the v13_reg Public LB of 12.269 without returning to broad, untracked exper
 
 ## Next Experiments
 
-1. Reconstruct v13 predictions for all three test wells and save a compact per-well trend table:
+1. Wait for the pending PF-family notebook submissions:
+   - `53339812`: `path_rerank`; low local confidence, useful mainly as an LB probe.
+   - `53344688`: `grid_s3_b0_h0p2`; best current local fixed-weight candidate.
+   - `53344707`: `public_selector`; PF baseline and CV/LB calibration point.
+2. If `public_selector` lands near the public notebook's 8.860 LB, prioritize PF selector refinement:
+   - per-bin selector weights rather than one global fixed weight;
+   - more stable local CV over 100-200 `lb_like` / hard wells;
+   - stress-test top candidates on random and hard selections before submission.
+3. If `grid_s3_b0_h0p2` beats `public_selector`, expand only around scale 3 with hold 0.10-0.25 and low/no beam.
+4. If both PF candidates fail to beat v13/v23, investigate notebook-substitution mismatch or missing artifact features before spending more submissions.
+5. Reconstruct v13 predictions for all three test wells and save a compact per-well trend table:
    - start TVT, end TVT, net change, min, max, standard deviation;
    - correction mean/std/range;
    - comparison to anchor and anchored physics.
-2. Compare v13 trends against v23 spatial-neighbor inference:
+6. Compare v13 trends against v23 spatial-neighbor inference:
    - only accept v23 influence where it changes the intended target well;
    - avoid global replacement if it worsens flat-looking behavior.
-3. Build manual blend candidates by well, not by row:
+7. Build manual blend candidates by well, not by row:
    - `000d7d20`: v13-heavy or anchor-heavy.
    - `00bbac68`: test v13/v23 spatial blend.
    - `00e12e8b`: test v13 plus small smoothed GR-deviation adjustment.
-4. Submit only candidates that have a written expected outcome:
+8. Submit only candidates that have a written expected outcome:
    - which well should improve;
    - whether TVT range should widen, shrink, rise, or fall;
    - how much the prediction differs from v13.

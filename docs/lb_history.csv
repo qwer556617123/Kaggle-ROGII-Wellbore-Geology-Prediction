@@ -11,3 +11,6 @@ local,attenuation_learned,"held-out CV learned global alpha",cv_row_rmse,15.80,,
 local,attenuation_alpha_0p07,"held-out CV fixed alpha=0.070",cv_row_rmse,16.82,,"local gate only; no accepted LB submission"
 notebook_v11,v13_beta_0p80_notebook,"v13-like LGBM notebook, anchor blend beta 0.80, 1254 rounds",cv_rank_replay_row_rmse,13.782,12.548,"Kaggle notebook version 11, ref 53338095"
 notebook_v12,v13_beta_0p75_notebook,"v13-like LGBM notebook, anchor blend beta 0.75, 1254 rounds",cv_rank_replay_row_rmse,13.797,12.650,"Kaggle notebook version 12, ref 53338233"
+notebook_pf_v1,path_rerank,"PF path library reranked by full-sequence GR score",pf_cv_row_rmse,11.573,,"Kaggle notebook rogii-pf-experiments version 1, ref 53339812, pending"
+notebook_pf_v3,grid_s3_b0_h0p2,"PF scale 3 fixed selector with 0 beam and 0.20 hold",pf_cv_row_rmse,7.134,,"Kaggle notebook rogii-pf-experiments version 3, ref 53344688, pending"
+notebook_pf_v4,public_selector,"PF public-style selector baseline",pf_cv_row_rmse,7.255,,"Kaggle notebook rogii-pf-experiments version 4, ref 53344707, pending"
