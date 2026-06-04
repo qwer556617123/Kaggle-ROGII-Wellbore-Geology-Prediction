@@ -6,7 +6,7 @@ The next phase is Public LB focused. That means test-well-specific analysis is a
 
 Beat the v13_reg Public LB of 12.269 without returning to broad, untracked experiment churn. Treat all existing branches as weak until proven otherwise; none should be assumed active or promising just because it exists.
 
-The current best public clue is PF/physical modeling rather than another global LGBM feature sweep. Local PF CV is now the primary gate for this branch: it is allowed to select candidates, but LB is still needed to calibrate because the competition reruns notebooks on hidden substituted test data.
+The current best public clue is PF/physical modeling rather than another global LGBM feature sweep. Local PF CV is now the primary gate for this branch: `grid_s3_b0_h0p2` beat `public_selector` both locally and on LB, so this validation is useful for ranking PF-selector variants.
 
 ## Test Wells
 
@@ -19,15 +19,17 @@ The current best public clue is PF/physical modeling rather than another global 
 ## Next Experiments
 
 1. Wait for the pending PF-family notebook submissions:
-   - `53339812`: `path_rerank`; low local confidence, useful mainly as an LB probe.
-   - `53344688`: `grid_s3_b0_h0p2`; best current local fixed-weight candidate.
-   - `53344707`: `public_selector`; PF baseline and CV/LB calibration point.
-2. If `public_selector` lands near the public notebook's 8.860 LB, prioritize PF selector refinement:
+   - `53361269`: `bin_less_aggressive`; current best 100-well local candidate.
+   - `53361314`: `grid_s3_b0_h0p15`; stable fixed-weight comparison.
+2. Prioritize PF selector refinement:
    - per-bin selector weights rather than one global fixed weight;
    - more stable local CV over 100-200 `lb_like` / hard wells;
    - stress-test top candidates on random and hard selections before submission.
-3. If `grid_s3_b0_h0p2` beats `public_selector`, expand only around scale 3 with hold 0.10-0.25 and low/no beam.
-4. If both PF candidates fail to beat v13/v23, investigate notebook-substitution mismatch or missing artifact features before spending more submissions.
+3. Expand only around the confirmed region:
+   - fixed scale 3 with hold 0.10-0.25 and zero beam;
+   - code-specific variants for test-like codes 0, 2, and 3;
+   - keep beam weight near zero unless hard/random CV proves otherwise.
+4. If v5/v6 fail to improve over 8.752, prefer CV enlargement and per-code regularization before another submission.
 5. Reconstruct v13 predictions for all three test wells and save a compact per-well trend table:
    - start TVT, end TVT, net change, min, max, standard deviation;
    - correction mean/std/range;
