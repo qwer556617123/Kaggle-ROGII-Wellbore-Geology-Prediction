@@ -23,7 +23,7 @@ from scipy.signal import savgol_filter
 
 warnings.filterwarnings("ignore")
 
-VARIANT = os.getenv("ROGII_VARIANT", "public_selector")
+VARIANT = os.getenv("ROGII_VARIANT", "bin_less_aggressive")
 N_PARTICLES = int(os.getenv("ROGII_N_PARTICLES", "500"))
 N_SEEDS = int(os.getenv("ROGII_N_SEEDS", "256"))
 PF_SCALES = tuple(float(x) for x in os.getenv("ROGII_PF_SCALES", "3,5,8,12").split(","))
@@ -43,6 +43,26 @@ SELECTOR_BIN_VARIANTS = {
     5: "pf_scale_12_beam_0.2_hold_0.05",
 }
 SELECTOR_GLOBAL_VARIANT = "pf_scale_8_hold_0.2"
+BIN_SELECTOR_VARIANTS = {
+    "bin_best_v1": {
+        0: "grid_s3_b0_h0p05",
+        2: "grid_s8_b0_h0p05",
+        3: "grid_s3_b0_h0p15",
+        5: "grid_s12_b0_h0p2",
+    },
+    "bin_less_aggressive": {
+        0: "grid_s3_b0_h0p1",
+        2: "grid_s8_b0_h0p1",
+        3: "grid_s3_b0_h0p15",
+        5: "grid_s12_b0_h0p15",
+    },
+    "bin_lb_safe": {
+        0: "grid_s3_b0_h0p2",
+        2: "grid_s8_b0_h0p1",
+        3: "grid_s3_b0_h0p15",
+        5: "grid_s12_b0_h0p2",
+    },
+}
 
 BEAM_CONFIGS = [
     (10, 20.0, 144.0, 2),
@@ -419,6 +439,13 @@ def run_grid_selector(hw: pd.DataFrame, tw: pd.DataFrame, variant: str) -> np.nd
     return pred
 
 
+def run_bin_selector(hw: pd.DataFrame, tw: pd.DataFrame, variant: str) -> np.ndarray:
+    code, _, n_eval, z_span = selector_well_code(hw)
+    selected = BIN_SELECTOR_VARIANTS[variant].get(code, "grid_s3_b0_h0p2")
+    print(f"  bin_selector variant={variant} code={code} selected={selected} n_eval={n_eval:.0f} z_span={z_span:.2f}")
+    return run_grid_selector(hw, tw, selected)
+
+
 def run_uncertainty_selector(hw: pd.DataFrame, tw: pd.DataFrame) -> np.ndarray:
     pf_by_scale, meta = run_pf_scales(hw, tw)
     beam = run_beam_ensemble(hw, tw, event_weighted=True)
@@ -478,6 +505,8 @@ def predict_well(wid: str, hw_te: pd.DataFrame, tw_te: pd.DataFrame, train_wids:
         return run_uncertainty_selector(hw_te, tw_ref)
     if VARIANT.startswith("grid_s"):
         return run_grid_selector(hw_te, tw_ref, VARIANT)
+    if VARIANT in BIN_SELECTOR_VARIANTS:
+        return run_bin_selector(hw_te, tw_ref, VARIANT)
     raise ValueError(f"Unknown ROGII_VARIANT={VARIANT}")
 
 

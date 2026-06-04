@@ -33,6 +33,26 @@ SELECTOR_BIN_VARIANTS = {
     5: "pf_scale_12_beam_0.2_hold_0.05",
 }
 SELECTOR_GLOBAL_VARIANT = "pf_scale_8_hold_0.2"
+BIN_SELECTOR_VARIANTS = {
+    "bin_best_v1": {
+        0: "grid_s3_b0_h0p05",
+        2: "grid_s8_b0_h0p05",
+        3: "grid_s3_b0_h0p15",
+        5: "grid_s12_b0_h0p2",
+    },
+    "bin_less_aggressive": {
+        0: "grid_s3_b0_h0p1",
+        2: "grid_s8_b0_h0p1",
+        3: "grid_s3_b0_h0p15",
+        5: "grid_s12_b0_h0p15",
+    },
+    "bin_lb_safe": {
+        0: "grid_s3_b0_h0p2",
+        2: "grid_s8_b0_h0p1",
+        3: "grid_s3_b0_h0p15",
+        5: "grid_s12_b0_h0p2",
+    },
+}
 BEAM_CONFIGS = [
     (10, 20.0, 144.0, 2),
     (10, 8.0, 64.0, 2),
@@ -402,6 +422,24 @@ def apply_selector_variant(name: str, pf_by_scale: dict[str, np.ndarray], beam: 
     return pred
 
 
+def parse_grid_variant(name: str) -> tuple[float, float, float]:
+    match = re.fullmatch(r"grid_s([0-9]+(?:p[0-9]+)?)_b([0-9]+(?:p[0-9]+)?)_h([0-9]+(?:p[0-9]+)?)", name)
+    if not match:
+        raise ValueError(f"Bad grid variant name={name}")
+    scale = float(match.group(1).replace("p", "."))
+    beam_weight = float(match.group(2).replace("p", "."))
+    hold_weight = float(match.group(3).replace("p", "."))
+    return scale, beam_weight, hold_weight
+
+
+def apply_grid_variant(name: str, pf_by_scale: dict[str, np.ndarray], beam: np.ndarray, last_known_tvt: float) -> np.ndarray:
+    scale, beam_weight, hold_weight = parse_grid_variant(name)
+    base = pf_by_scale.get(f"pf_scale_{scale:g}", pf_by_scale["pf_mean"])
+    pred = (1.0 - beam_weight) * base + beam_weight * beam
+    pred = (1.0 - hold_weight) * pred + hold_weight * last_known_tvt
+    return pred
+
+
 def predict_variants(
     hw: pd.DataFrame,
     tw: pd.DataFrame,
@@ -412,7 +450,9 @@ def predict_variants(
     predictions = {}
     meta_out = {}
     needs_pf = any(
-        v in {"pf_scale_8", "public_selector", "path_rerank", "event_beam", "uncertainty_selector"} or v.startswith("grid_s")
+        v in {"pf_scale_8", "public_selector", "path_rerank", "event_beam", "uncertainty_selector"}
+        or v.startswith("grid_s")
+        or v in BIN_SELECTOR_VARIANTS
         for v in variants
     )
     paths = log_liks = None
@@ -424,7 +464,12 @@ def predict_variants(
         meta_out.update({f"pf_{k}": v for k, v in pf_meta.items()})
 
     beam_event = None
-    if any(v in {"beam_event", "public_selector", "event_beam", "uncertainty_selector"} or v.startswith("grid_s") for v in variants):
+    if any(
+        v in {"beam_event", "public_selector", "event_beam", "uncertainty_selector"}
+        or v.startswith("grid_s")
+        or v in BIN_SELECTOR_VARIANTS
+        for v in variants
+    ):
         beam_event = beam_ensemble(hw, tw, event_weighted=True)
 
     last_known_tvt = float(hw["TVT_input"].dropna().iloc[-1])
@@ -457,16 +502,12 @@ def predict_variants(
             meta_out["unc_hold_weight"] = float(hold_weight)
             meta_out["unc_beam_weight"] = float(beam_weight)
         elif variant.startswith("grid_s"):
-            match = re.fullmatch(r"grid_s([0-9]+(?:p[0-9]+)?)_b([0-9]+(?:p[0-9]+)?)_h([0-9]+(?:p[0-9]+)?)", variant)
-            if not match:
-                raise ValueError(f"Bad grid variant name={variant}")
-            scale = float(match.group(1).replace("p", "."))
-            beam_weight = float(match.group(2).replace("p", "."))
-            hold_weight = float(match.group(3).replace("p", "."))
-            base = pf_by_scale.get(f"pf_scale_{scale:g}", pf_by_scale["pf_mean"])
-            pred = (1.0 - beam_weight) * base + beam_weight * beam_event
-            pred = (1.0 - hold_weight) * pred + hold_weight * last_known_tvt
-            predictions[variant] = pred
+            predictions[variant] = apply_grid_variant(variant, pf_by_scale, beam_event, last_known_tvt)
+        elif variant in BIN_SELECTOR_VARIANTS:
+            code, _, _, _ = selector_well_code(hw)
+            selected = BIN_SELECTOR_VARIANTS[variant].get(code, "grid_s3_b0_h0p2")
+            predictions[variant] = apply_grid_variant(selected, pf_by_scale, beam_event, last_known_tvt)
+            meta_out[f"{variant}_code"] = float(code)
         else:
             raise ValueError(f"Unknown variant={variant}")
     return predictions, meta_out
