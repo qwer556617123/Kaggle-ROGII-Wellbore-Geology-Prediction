@@ -15,10 +15,15 @@ models/*.pt
 models/*.csv
 
 # All submission/prediction CSV files
+submission.csv
 submissions/
 predictions/
 reports/
 kernel_output*/
+
+# Local Kaggle reference pulls and smoke diagnostics
+kaggle/public/
+docs/*_smoke.csv
 
 # Python cache
 __pycache__/
