@@ -432,10 +432,15 @@ def parse_grid_variant(name: str) -> tuple[float, float, float]:
     return scale, beam_weight, hold_weight
 
 
-def apply_grid_variant(name: str, pf_by_scale: dict[str, np.ndarray], beam: np.ndarray, last_known_tvt: float) -> np.ndarray:
+def apply_grid_variant(name: str, pf_by_scale: dict[str, np.ndarray], beam: np.ndarray | None, last_known_tvt: float) -> np.ndarray:
     scale, beam_weight, hold_weight = parse_grid_variant(name)
     base = pf_by_scale.get(f"pf_scale_{scale:g}", pf_by_scale["pf_mean"])
-    pred = (1.0 - beam_weight) * base + beam_weight * beam
+    if beam_weight > 0:
+        if beam is None:
+            raise ValueError(f"Variant {name} needs beam predictions.")
+        pred = (1.0 - beam_weight) * base + beam_weight * beam
+    else:
+        pred = base
     pred = (1.0 - hold_weight) * pred + hold_weight * last_known_tvt
     return pred
 
@@ -464,12 +469,16 @@ def predict_variants(
         meta_out.update({f"pf_{k}": v for k, v in pf_meta.items()})
 
     beam_event = None
-    if any(
-        v in {"beam_event", "public_selector", "event_beam", "uncertainty_selector"}
-        or v.startswith("grid_s")
-        or v in BIN_SELECTOR_VARIANTS
-        for v in variants
-    ):
+    needs_beam = False
+    for v in variants:
+        if v in {"beam_event", "public_selector", "event_beam", "uncertainty_selector"}:
+            needs_beam = True
+        elif v.startswith("grid_s") and parse_grid_variant(v)[1] > 0:
+            needs_beam = True
+        elif v in BIN_SELECTOR_VARIANTS:
+            selected = BIN_SELECTOR_VARIANTS[v].values()
+            needs_beam = needs_beam or any(parse_grid_variant(name)[1] > 0 for name in selected)
+    if needs_beam:
         beam_event = beam_ensemble(hw, tw, event_weighted=True)
 
     last_known_tvt = float(hw["TVT_input"].dropna().iloc[-1])

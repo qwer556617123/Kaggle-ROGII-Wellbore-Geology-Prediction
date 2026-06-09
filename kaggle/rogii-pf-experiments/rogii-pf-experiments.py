@@ -24,8 +24,8 @@ from scipy.signal import savgol_filter
 warnings.filterwarnings("ignore")
 
 VARIANT = os.getenv("ROGII_VARIANT", "bin_less_aggressive")
-N_PARTICLES = int(os.getenv("ROGII_N_PARTICLES", "500"))
-N_SEEDS = int(os.getenv("ROGII_N_SEEDS", "256"))
+N_PARTICLES = int(os.getenv("ROGII_N_PARTICLES", "160"))
+N_SEEDS = int(os.getenv("ROGII_N_SEEDS", "64"))
 PF_SCALES = tuple(float(x) for x in os.getenv("ROGII_PF_SCALES", "3,5,8,12").split(","))
 OUTPUT_PATH = Path("/kaggle/working/submission.csv")
 if not OUTPUT_PATH.parent.exists():
@@ -427,10 +427,13 @@ def run_public_selector(hw: pd.DataFrame, tw: pd.DataFrame) -> np.ndarray:
 def run_grid_selector(hw: pd.DataFrame, tw: pd.DataFrame, variant: str) -> np.ndarray:
     scale, beam_weight, hold_weight = parse_grid_variant(variant)
     pf_by_scale, meta = run_pf_scales(hw, tw)
-    beam = run_beam_ensemble(hw, tw, event_weighted=True)
     last_known_tvt = float(hw["TVT_input"].dropna().iloc[-1])
     base = pf_by_scale.get(f"pf_scale_{scale:g}", pf_by_scale["pf_mean"])
-    pred = (1.0 - beam_weight) * base + beam_weight * beam
+    if beam_weight > 0:
+        beam = run_beam_ensemble(hw, tw, event_weighted=True)
+        pred = (1.0 - beam_weight) * base + beam_weight * beam
+    else:
+        pred = base
     pred = (1.0 - hold_weight) * pred + hold_weight * last_known_tvt
     print(
         f"  grid_selector scale={scale:g} beam={beam_weight:.3f} hold={hold_weight:.3f} "
