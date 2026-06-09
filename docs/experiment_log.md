@@ -32,11 +32,14 @@ These experiments are inspired by the public physical/PF notebooks. Local CV use
 | `uncertainty_selector` | Dynamic hold/beam weights from PF uncertainty and GR missingness | row RMSE 7.618, per-well mean 6.326 | not submitted | Hold; did not beat public selector locally |
 | `path_rerank` | PF path library reranked by full-sequence GR score | row RMSE 11.573, per-well mean 7.793; one well failed badly | 9.099, ref 53339812 | Worse than selector; stop |
 | `event_beam` | Event-weighted beam plus PF blend | smoke row RMSE 12.184 on 18 wells | not submitted | Drop for now |
-| `bin_less_aggressive` | Per-bin selector from 100-well CV: code0 s3/h0.10, code2 s8/h0.10, code3 s3/h0.15, code5 s12/h0.15 | row RMSE 10.368, per-well mean 7.732 on 100 `lb_like` wells | pending, ref 53361269 | Submitted as next best local candidate |
-| `grid_s3_b0_h0p15` | Fixed PF scale 3 with 0 beam and 0.15 hold | row RMSE 10.389, per-well mean 7.821 on 100 `lb_like` wells | pending, ref 53361314 | Submitted as stable fixed-weight comparison |
+| `bin_less_aggressive` | Per-bin selector from 100-well CV: code0 s3/h0.10, code2 s8/h0.10, code3 s3/h0.15, code5 s12/h0.15 | row RMSE 10.368, per-well mean 7.732 on 100 `lb_like` wells | timeout/no score, ref 53361269 | Too slow at 256 seeds / 500 particles |
+| `grid_s3_b0_h0p15` | Fixed PF scale 3 with 0 beam and 0.15 hold | row RMSE 10.389, per-well mean 7.821 on 100 `lb_like` wells | timeout/no score, ref 53361314 | Too slow at 256 seeds / 500 particles |
+| `bin_less_aggressive_fast` | Same per-bin selector, but 64 seeds / 160 particles and skip beam when weight is zero | row RMSE 7.844, per-well mean 6.368 on 36 `lb_like` wells | pending, ref 53511157 | Submitted to avoid hidden rerun timeout |
+| `grid_s3_b0_h0p2_fast` | Same fixed selector as current best LB, but 64 seeds / 160 particles and zero-beam shortcut | row RMSE 7.860, per-well mean 6.571 on 36 `lb_like` wells | pending, ref 53511214 | Submitted as fast safety version |
 
 Top selector-grid rows are recorded in `docs/pf_selector_grid_summary.csv`; per-well detail is in `docs/pf_selector_grid_details.csv`.
 The larger 100-well selector comparison is recorded in `docs/pf_bin_selector_cv_summary.csv` and `docs/pf_bin_selector_cv_details.csv`.
+The fast runtime check is recorded in `docs/pf_fast_selector_cv_summary.csv` and `docs/pf_fast_selector_cv_details.csv`.
 
 ## Low Priority Branches
 

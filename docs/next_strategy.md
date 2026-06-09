@@ -19,29 +19,33 @@ The current best public clue is PF/physical modeling rather than another global 
 ## Next Experiments
 
 1. Wait for the pending PF-family notebook submissions:
-   - `53361269`: `bin_less_aggressive`; current best 100-well local candidate.
-   - `53361314`: `grid_s3_b0_h0p15`; stable fixed-weight comparison.
-2. Prioritize PF selector refinement:
+   - `53511157`: `bin_less_aggressive_fast`; 64 seeds / 160 particles with zero-beam shortcut.
+   - `53511214`: `grid_s3_b0_h0p2_fast`; fast version of current best LB candidate.
+2. Runtime is now a first-class constraint:
+   - Kaggle GPU is currently off, but this NumPy PF code would not benefit meaningfully from enabling it.
+   - Do not re-enable 256 seeds / 500 particles unless the hidden rerun timeout is solved.
+   - Skip beam computation whenever beam weight is zero.
+3. Prioritize PF selector refinement:
    - per-bin selector weights rather than one global fixed weight;
    - more stable local CV over 100-200 `lb_like` / hard wells;
    - stress-test top candidates on random and hard selections before submission.
-3. Expand only around the confirmed region:
+4. Expand only around the confirmed region:
    - fixed scale 3 with hold 0.10-0.25 and zero beam;
    - code-specific variants for test-like codes 0, 2, and 3;
    - keep beam weight near zero unless hard/random CV proves otherwise.
-4. If v5/v6 fail to improve over 8.752, prefer CV enlargement and per-code regularization before another submission.
-5. Reconstruct v13 predictions for all three test wells and save a compact per-well trend table:
+5. If v7/v8 still time out, lower to 32 seeds / 128 particles before considering a GPU rewrite.
+6. Reconstruct v13 predictions for all three test wells and save a compact per-well trend table:
    - start TVT, end TVT, net change, min, max, standard deviation;
    - correction mean/std/range;
    - comparison to anchor and anchored physics.
-6. Compare v13 trends against v23 spatial-neighbor inference:
+7. Compare v13 trends against v23 spatial-neighbor inference:
    - only accept v23 influence where it changes the intended target well;
    - avoid global replacement if it worsens flat-looking behavior.
-7. Build manual blend candidates by well, not by row:
+8. Build manual blend candidates by well, not by row:
    - `000d7d20`: v13-heavy or anchor-heavy.
    - `00bbac68`: test v13/v23 spatial blend.
    - `00e12e8b`: test v13 plus small smoothed GR-deviation adjustment.
-8. Submit only candidates that have a written expected outcome:
+9. Submit only candidates that have a written expected outcome:
    - which well should improve;
    - whether TVT range should widen, shrink, rise, or fall;
    - how much the prediction differs from v13.
