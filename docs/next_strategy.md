@@ -19,16 +19,16 @@ The current best public clue is PF/physical modeling rather than another global 
 ## Next Experiments
 
 1. Wait for the pending PF-family notebook submissions:
-   - `53511157`: `bin_less_aggressive_fast`; 64 seeds / 160 particles with zero-beam shortcut.
-   - `53511214`: `grid_s3_b0_h0p2_fast`; fast version of current best LB candidate.
+   - version 9: `grid_s3_b0_h0p22_fast`; bracket above current best.
+   - version 10: `grid_s3_b0_h0p18_fast`; bracket below current best.
 2. Runtime is now a first-class constraint:
    - Kaggle GPU is currently off, but this NumPy PF code would not benefit meaningfully from enabling it.
    - Do not re-enable 256 seeds / 500 particles unless the hidden rerun timeout is solved.
    - Skip beam computation whenever beam weight is zero.
-3. Prioritize PF selector refinement:
-   - per-bin selector weights rather than one global fixed weight;
-   - more stable local CV over 100-200 `lb_like` / hard wells;
-   - stress-test top candidates on random and hard selections before submission.
+3. Prioritize fixed PF selector refinement:
+   - `grid_s3_b0_h0p2_fast` is the current best LB at 8.564.
+   - Per-bin selector looked slightly better locally but lost on LB, so treat it as secondary.
+   - Stress-test fixed h0.18-h0.24 on random and hard selections before broader submission.
 4. Expand only around the confirmed region:
    - fixed scale 3 with hold 0.10-0.25 and zero beam;
    - code-specific variants for test-like codes 0, 2, and 3;
