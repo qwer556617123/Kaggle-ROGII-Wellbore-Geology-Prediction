@@ -18,22 +18,22 @@ The current best public clue is PF/physical modeling rather than another global 
 
 ## Next Experiments
 
-1. Wait for the pending PF-family notebook submissions:
-   - version 9: `grid_s3_b0_h0p22_fast`; bracket above current best.
-   - version 10: `grid_s3_b0_h0p18_fast`; bracket below current best.
+1. Wait for the pending PF-family notebook submission:
+   - version 11: `grid_s3_b0_h0p17_fast`; last narrow hold bracket before pivoting.
 2. Runtime is now a first-class constraint:
    - Kaggle GPU is currently off, but this NumPy PF code would not benefit meaningfully from enabling it.
    - Do not re-enable 256 seeds / 500 particles unless the hidden rerun timeout is solved.
    - Skip beam computation whenever beam weight is zero.
-3. Prioritize fixed PF selector refinement:
-   - `grid_s3_b0_h0p2_fast` is the current best LB at 8.564.
-   - Per-bin selector looked slightly better locally but lost on LB, so treat it as secondary.
-   - Stress-test fixed h0.18-h0.24 on random and hard selections before broader submission.
-4. Expand only around the confirmed region:
-   - fixed scale 3 with hold 0.10-0.25 and zero beam;
-   - code-specific variants for test-like codes 0, 2, and 3;
-   - keep beam weight near zero unless hard/random CV proves otherwise.
-5. If v7/v8 still time out, lower to 32 seeds / 128 particles before considering a GPU rewrite.
+3. Treat fixed-hold PF as the new baseline, not the next breakthrough:
+   - `grid_s3_b0_h0p18_fast` is the current best LB at 8.541.
+   - h0.22 was worse and per-bin was worse on LB, so more hold/selector micro-tuning is low leverage.
+   - Keep h0.18 as the default unless a larger method beats it locally and on LB.
+4. Shift to larger method changes:
+   - Artifact-stack blending: reproduce the public physical/PF plus artifact-stack idea locally, then replace the external artifact component with our own lightweight stack if the dataset is unavailable.
+   - Learned PF/meta-selector: generate multiple PF candidates per well and train a local meta-model to choose/blend them using pseudo-hidden wells, instead of hand-coded bins.
+   - Full-path ensemble search: sample PF trajectories, score them with global GR/event/shape criteria, and average only the best path families; do this carefully because the first path-rerank attempt was too brittle.
+   - Formation/contact residual correction: learn a low-dimensional correction on top of h0.18 using formation tops, Z span, GR missingness, and endpoint trend features.
+5. Avoid another small submission unless it tests one of the larger changes above.
 6. Reconstruct v13 predictions for all three test wells and save a compact per-well trend table:
    - start TVT, end TVT, net change, min, max, standard deviation;
    - correction mean/std/range;

@@ -18,5 +18,6 @@ notebook_pf_v5,bin_less_aggressive,"Per-bin PF selector: code0 s3 h0.10, code2 s
 notebook_pf_v6,grid_s3_b0_h0p15,"PF scale 3 fixed selector with 0 beam and 0.15 hold",pf_cv100_row_rmse,10.389,,"Kaggle notebook rogii-pf-experiments version 6, ref 53361314; notebook timeout/no score"
 notebook_pf_v7_fast,bin_less_aggressive_fast,"Per-bin PF selector with 64 seeds, 160 particles, and zero-beam shortcut",pf_cv36_row_rmse,7.844,8.578,"Kaggle notebook rogii-pf-experiments version 7, ref 53511157"
 notebook_pf_v8_fast,grid_s3_b0_h0p2_fast,"PF scale 3 hold 0.20 with 64 seeds, 160 particles, and zero-beam shortcut",pf_cv36_row_rmse,7.860,8.564,"Kaggle notebook rogii-pf-experiments version 8, ref 53511214; best known LB so far"
-notebook_pf_v9_fast,grid_s3_b0_h0p22_fast,"PF scale 3 hold 0.22 with 64 seeds, 160 particles, and zero-beam shortcut",pf_cv36_row_rmse,7.861,,"Kaggle notebook rogii-pf-experiments version 9, pending"
-notebook_pf_v10_fast,grid_s3_b0_h0p18_fast,"PF scale 3 hold 0.18 with 64 seeds, 160 particles, and zero-beam shortcut",pf_cv36_row_rmse,7.869,,"Kaggle notebook rogii-pf-experiments version 10, pending"
+notebook_pf_v9_fast,grid_s3_b0_h0p22_fast,"PF scale 3 hold 0.22 with 64 seeds, 160 particles, and zero-beam shortcut",pf_cv36_row_rmse,7.861,8.598,"Kaggle notebook rogii-pf-experiments version 9"
+notebook_pf_v10_fast,grid_s3_b0_h0p18_fast,"PF scale 3 hold 0.18 with 64 seeds, 160 particles, and zero-beam shortcut",pf_cv36_row_rmse,7.869,8.541,"Kaggle notebook rogii-pf-experiments version 10; best known LB so far"
+notebook_pf_v11_fast,grid_s3_b0_h0p17_fast,"PF scale 3 hold 0.17 with 64 seeds, 160 particles, and zero-beam shortcut",pf_cv36_row_rmse,,,"Kaggle notebook rogii-pf-experiments version 11, ref 53576928, pending"

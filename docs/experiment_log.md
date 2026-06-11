@@ -36,8 +36,9 @@ These experiments are inspired by the public physical/PF notebooks. Local CV use
 | `grid_s3_b0_h0p15` | Fixed PF scale 3 with 0 beam and 0.15 hold | row RMSE 10.389, per-well mean 7.821 on 100 `lb_like` wells | timeout/no score, ref 53361314 | Too slow at 256 seeds / 500 particles |
 | `bin_less_aggressive_fast` | Same per-bin selector, but 64 seeds / 160 particles and skip beam when weight is zero | row RMSE 7.844, per-well mean 6.368 on 36 `lb_like` wells | 8.578, ref 53511157 | Valid but slightly worse than fixed h0.20 |
 | `grid_s3_b0_h0p2_fast` | Same fixed selector as current best LB, but 64 seeds / 160 particles and zero-beam shortcut | row RMSE 7.860, per-well mean 6.571 on 36 `lb_like` wells | 8.564, ref 53511214 | Best known LB; fixed selector beats per-bin on LB |
-| `grid_s3_b0_h0p22_fast` | Hold sweep neighbor above h0.20 | row RMSE 7.861 on 36 `lb_like` wells | pending | Submitted as low-risk bracket around best LB |
-| `grid_s3_b0_h0p18_fast` | Hold sweep neighbor below h0.20 | row RMSE 7.869 on 36 `lb_like` wells | pending | Submitted as low-risk bracket around best LB |
+| `grid_s3_b0_h0p22_fast` | Hold sweep neighbor above h0.20 | row RMSE 7.861 on 36 `lb_like` wells | 8.598, ref 53545690 | Worse; higher hold is not promising |
+| `grid_s3_b0_h0p18_fast` | Hold sweep neighbor below h0.20 | row RMSE 7.869 on 36 `lb_like` wells | 8.541, ref 53545708 | Best known LB; h0.18 is current default |
+| `grid_s3_b0_h0p17_fast` | Hold sweep neighbor below h0.18 | not separately scored in CV; bracket from LB trend | pending, ref 53576928 | Last small-bracket probe before larger method change |
 
 Top selector-grid rows are recorded in `docs/pf_selector_grid_summary.csv`; per-well detail is in `docs/pf_selector_grid_details.csv`.
 The larger 100-well selector comparison is recorded in `docs/pf_bin_selector_cv_summary.csv` and `docs/pf_bin_selector_cv_details.csv`.
