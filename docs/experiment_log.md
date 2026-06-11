@@ -39,11 +39,14 @@ These experiments are inspired by the public physical/PF notebooks. Local CV use
 | `grid_s3_b0_h0p22_fast` | Hold sweep neighbor above h0.20 | row RMSE 7.861 on 36 `lb_like` wells | 8.598, ref 53545690 | Worse; higher hold is not promising |
 | `grid_s3_b0_h0p18_fast` | Hold sweep neighbor below h0.20 | row RMSE 7.869 on 36 `lb_like` wells | 8.541, ref 53545708 | Best known LB; h0.18 is current default |
 | `grid_s3_b0_h0p17_fast` | Hold sweep neighbor below h0.18 | not separately scored in CV; bracket from LB trend | pending, ref 53576928 | Last small-bracket probe before larger method change |
+| `pf_residual_correction` | Learn residual on top of h0.18 from row/well features | base row RMSE 7.869; best tested residual model was worse at 8.307+ on 36 wells | not submitted | Reject current design; residual correction overfits pseudo-hidden wells |
+| `artifact_stack_probe` | Inspect public v10/v11 artifact datasets as a possible PF blend component | v11 artifact scores around 10.44 OOF; helper dataset for kojimar blend was not discoverable by Kaggle dataset search | not submitted | Possible future blend component, but needs custom inference wrapper/feature builder |
 
 Top selector-grid rows are recorded in `docs/pf_selector_grid_summary.csv`; per-well detail is in `docs/pf_selector_grid_details.csv`.
 The larger 100-well selector comparison is recorded in `docs/pf_bin_selector_cv_summary.csv` and `docs/pf_bin_selector_cv_details.csv`.
 The fast runtime check is recorded in `docs/pf_fast_selector_cv_summary.csv` and `docs/pf_fast_selector_cv_details.csv`.
 The fast hold sweep is recorded in `docs/pf_fast_hold_sweep_summary.csv` and `docs/pf_fast_hold_sweep_details.csv`.
+The rejected residual correction check is recorded in `docs/pf_residual_summary.csv`.
 
 ## Low Priority Branches
 

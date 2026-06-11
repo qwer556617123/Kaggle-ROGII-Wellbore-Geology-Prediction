@@ -24,6 +24,8 @@ kernel_output*/
 # Local Kaggle reference pulls and smoke diagnostics
 kaggle/public/
 docs/*_smoke.csv
+docs/pf_residual_rows*.csv
+kaggle/artifact_probe/
 
 # Python cache
 __pycache__/
