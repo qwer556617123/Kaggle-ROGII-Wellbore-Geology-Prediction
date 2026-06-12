@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -41,6 +42,10 @@ def run_component(name: str, script: Path, output_dir: Path, extra_env: dict[str
     print(f"output_dir={output_dir}", flush=True)
     subprocess.run([sys.executable, str(script)], check=True, env=env)
     csv_path = output_dir / "submission.csv"
+    fallback_csv = WORKING / "submission.csv"
+    if not csv_path.exists() and fallback_csv.exists():
+        shutil.copy2(fallback_csv, csv_path)
+        print(f"{name} wrote {fallback_csv}; copied to {csv_path}", flush=True)
     if not csv_path.exists():
         raise FileNotFoundError(f"{name} did not create {csv_path}")
     return csv_path

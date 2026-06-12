@@ -21,3 +21,4 @@ notebook_pf_v8_fast,grid_s3_b0_h0p2_fast,"PF scale 3 hold 0.20 with 64 seeds, 16
 notebook_pf_v9_fast,grid_s3_b0_h0p22_fast,"PF scale 3 hold 0.22 with 64 seeds, 160 particles, and zero-beam shortcut",pf_cv36_row_rmse,7.861,8.598,"Kaggle notebook rogii-pf-experiments version 9"
 notebook_pf_v10_fast,grid_s3_b0_h0p18_fast,"PF scale 3 hold 0.18 with 64 seeds, 160 particles, and zero-beam shortcut",pf_cv36_row_rmse,7.869,8.541,"Kaggle notebook rogii-pf-experiments version 10"
 notebook_pf_v11_fast,grid_s3_b0_h0p17_fast,"PF scale 3 hold 0.17 with 64 seeds, 160 particles, and zero-beam shortcut",pf_cv36_row_rmse,,8.534,"Kaggle notebook rogii-pf-experiments version 11, ref 53576928; best known LB so far"
+notebook_pf_artifact_v5,pf_h017_v10_artifact_95_5,"Dynamic PF h0.17 plus no-TabICL v10 artifact inference, 95/5 blend",artifact_probe_verified,,,"Kaggle notebook rogii-pf-artifact-blend version 5, ref 53612723, pending"
