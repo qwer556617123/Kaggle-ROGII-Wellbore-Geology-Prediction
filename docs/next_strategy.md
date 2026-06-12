@@ -31,7 +31,8 @@ The current best public clue is PF/physical modeling rather than another global 
    - Keep h0.18 as the default unless a larger method beats it locally and on LB.
 4. Shift to larger method changes:
    - Artifact-stack blending: public v10/v11 artifact datasets are visible, but the kojimar helper dataset is not discoverable by dataset search. Next step is a custom inference wrapper/feature builder, not a static CSV blend.
-   - `rogii-pf-artifact-blend` now embeds PF h0.17 and v10 artifact inference in one script. Version 5 uses a no-TabICL fallback and 95/5 PF/artifact blend, completed successfully, and is submitted as ref 53612723.
+   - `rogii-pf-artifact-blend` now embeds PF h0.17 and v10 artifact inference in one script. Version 5 uses a no-TabICL fallback and 95/5 PF/artifact blend, and improved Public LB to 8.415.
+   - Versions 6 and 7 bracket artifact weight at 10% and 2.5%; use their scores to decide whether the next artifact sweep should move upward or downward from 5%.
    - Learned PF/meta-selector: generate multiple PF candidates per well and train a local meta-model to choose/blend them using pseudo-hidden wells, instead of hand-coded bins.
    - Full-path ensemble search: sample PF trajectories, score them with global GR/event/shape criteria, and average only the best path families; do this carefully because the first path-rerank attempt was too brittle.
    - Formation/contact residual correction: the first row-level residual model was worse than h0.18, so only revisit with strong regularization or well-level corrections.
