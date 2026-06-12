@@ -25,7 +25,8 @@ kernel_output*/
 kaggle/public/
 docs/*_smoke.csv
 docs/pf_residual_rows*.csv
-kaggle/artifact_probe/
+kaggle/artifact_probe*/
+kaggle/artifact_blend_output*/
 
 # Python cache
 __pycache__/

@@ -41,6 +41,7 @@ These experiments are inspired by the public physical/PF notebooks. Local CV use
 | `grid_s3_b0_h0p17_fast` | Hold sweep neighbor below h0.18 | not separately scored in CV; bracket from LB trend | 8.534, ref 53576928 | Best known LB; h0.17 is current default |
 | `pf_residual_correction` | Learn residual on top of h0.18 from row/well features | base row RMSE 7.869; best tested residual model was worse at 8.307+ on 36 wells | not submitted | Reject current design; residual correction overfits pseudo-hidden wells |
 | `artifact_stack_probe` | Inspect public v10/v11 artifact datasets as a possible PF blend component | v11 artifact scores around 10.44 OOF; helper dataset for kojimar blend was not discoverable by Kaggle dataset search | not submitted | Possible future blend component, but needs custom inference wrapper/feature builder |
+| `pf_artifact_blend_v4` | Dynamic PF h0.17 plus v10 artifact inference, no-TabICL fallback, 95/5 PF/artifact blend | Kaggle notebook version 4 pushed; status not checked due Codex usage limit | not submitted | Check Kaggle UI/status next; version 1 failed due missing support files, version 3 failed because v10 artifacts expected TabICL predictions |
 
 Top selector-grid rows are recorded in `docs/pf_selector_grid_summary.csv`; per-well detail is in `docs/pf_selector_grid_details.csv`.
 The larger 100-well selector comparison is recorded in `docs/pf_bin_selector_cv_summary.csv` and `docs/pf_bin_selector_cv_details.csv`.
