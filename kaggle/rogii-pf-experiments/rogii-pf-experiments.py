@@ -23,7 +23,7 @@ from scipy.signal import savgol_filter
 
 warnings.filterwarnings("ignore")
 
-VARIANT = os.getenv("ROGII_VARIANT", "grid_s3_b0_h0p18")
+VARIANT = os.getenv("ROGII_VARIANT", "grid_s3_b0_h0p17")
 N_PARTICLES = int(os.getenv("ROGII_N_PARTICLES", "160"))
 N_SEEDS = int(os.getenv("ROGII_N_SEEDS", "64"))
 PF_SCALES = tuple(float(x) for x in os.getenv("ROGII_PF_SCALES", "3,5,8,12").split(","))

@@ -37,8 +37,8 @@ These experiments are inspired by the public physical/PF notebooks. Local CV use
 | `bin_less_aggressive_fast` | Same per-bin selector, but 64 seeds / 160 particles and skip beam when weight is zero | row RMSE 7.844, per-well mean 6.368 on 36 `lb_like` wells | 8.578, ref 53511157 | Valid but slightly worse than fixed h0.20 |
 | `grid_s3_b0_h0p2_fast` | Same fixed selector as current best LB, but 64 seeds / 160 particles and zero-beam shortcut | row RMSE 7.860, per-well mean 6.571 on 36 `lb_like` wells | 8.564, ref 53511214 | Best known LB; fixed selector beats per-bin on LB |
 | `grid_s3_b0_h0p22_fast` | Hold sweep neighbor above h0.20 | row RMSE 7.861 on 36 `lb_like` wells | 8.598, ref 53545690 | Worse; higher hold is not promising |
-| `grid_s3_b0_h0p18_fast` | Hold sweep neighbor below h0.20 | row RMSE 7.869 on 36 `lb_like` wells | 8.541, ref 53545708 | Best known LB; h0.18 is current default |
-| `grid_s3_b0_h0p17_fast` | Hold sweep neighbor below h0.18 | not separately scored in CV; bracket from LB trend | pending, ref 53576928 | Last small-bracket probe before larger method change |
+| `grid_s3_b0_h0p18_fast` | Hold sweep neighbor below h0.20 | row RMSE 7.869 on 36 `lb_like` wells | 8.541, ref 53545708 | Valid but superseded by h0.17 |
+| `grid_s3_b0_h0p17_fast` | Hold sweep neighbor below h0.18 | not separately scored in CV; bracket from LB trend | 8.534, ref 53576928 | Best known LB; h0.17 is current default |
 | `pf_residual_correction` | Learn residual on top of h0.18 from row/well features | base row RMSE 7.869; best tested residual model was worse at 8.307+ on 36 wells | not submitted | Reject current design; residual correction overfits pseudo-hidden wells |
 | `artifact_stack_probe` | Inspect public v10/v11 artifact datasets as a possible PF blend component | v11 artifact scores around 10.44 OOF; helper dataset for kojimar blend was not discoverable by Kaggle dataset search | not submitted | Possible future blend component, but needs custom inference wrapper/feature builder |
 

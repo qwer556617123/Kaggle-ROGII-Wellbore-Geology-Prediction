@@ -18,14 +18,15 @@ The current best public clue is PF/physical modeling rather than another global 
 
 ## Next Experiments
 
-1. Wait for the pending PF-family notebook submission:
-   - version 11: `grid_s3_b0_h0p17_fast`; last narrow hold bracket before pivoting.
+1. Treat `grid_s3_b0_h0p17_fast` as the current PF baseline:
+   - version 11 reached Public LB 8.534.
+   - The gain over h0.18 is real but small, so do not let this pull the project back into endless hold micro-tuning.
 2. Runtime is now a first-class constraint:
    - Kaggle GPU is currently off, but this NumPy PF code would not benefit meaningfully from enabling it.
    - Do not re-enable 256 seeds / 500 particles unless the hidden rerun timeout is solved.
    - Skip beam computation whenever beam weight is zero.
 3. Treat fixed-hold PF as the new baseline, not the next breakthrough:
-   - `grid_s3_b0_h0p18_fast` is the current best LB at 8.541.
+   - `grid_s3_b0_h0p17_fast` is the current best LB at 8.534.
    - h0.22 was worse and per-bin was worse on LB, so more hold/selector micro-tuning is low leverage.
    - Keep h0.18 as the default unless a larger method beats it locally and on LB.
 4. Shift to larger method changes:
