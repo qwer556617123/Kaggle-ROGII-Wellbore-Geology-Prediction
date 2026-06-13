@@ -35,6 +35,7 @@ __pycache__/
 .ipynb_checkpoints/
 
 # Temp / OS
+tmp/
 .DS_Store
 Thumbs.db
 *.log

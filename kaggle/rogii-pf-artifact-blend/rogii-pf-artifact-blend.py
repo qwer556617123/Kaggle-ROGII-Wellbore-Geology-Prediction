@@ -23,6 +23,10 @@ WORKING = Path("/kaggle/working") if Path("/kaggle/working").exists() else Path.
 COMPONENT_ROOT = WORKING / "embedded_components"
 PF_WEIGHT = float(os.getenv("ROGII_BLEND_PF_WEIGHT", "0.80"))
 PF_WEIGHT = max(0.0, min(1.0, PF_WEIGHT))
+WELL_PF_WEIGHTS = {
+    str(k): max(0.0, min(1.0, float(v)))
+    for k, v in json.loads(os.getenv("ROGII_BLEND_WELL_PF_WEIGHTS", "{}")).items()
+}
 
 
 def write_component(name: str, code: str) -> Path:
@@ -117,7 +121,9 @@ def main() -> None:
     pf = read_component(pf_csv, sample, "pf")
     artifact = read_component(artifact_csv, sample, "artifact")
     submission = sample[["id"]].copy()
-    submission["tvt"] = PF_WEIGHT * pf["tvt"].to_numpy(float) + (1.0 - PF_WEIGHT) * artifact["tvt"].to_numpy(float)
+    well_ids = submission["id"].str.rsplit("_", n=1).str[0]
+    weights = well_ids.map(WELL_PF_WEIGHTS).fillna(PF_WEIGHT).to_numpy(float)
+    submission["tvt"] = weights * pf["tvt"].to_numpy(float) + (1.0 - weights) * artifact["tvt"].to_numpy(float)
     out_path = WORKING / "submission.csv"
     submission.to_csv(out_path, index=False)
 
@@ -125,6 +131,7 @@ def main() -> None:
     summary = {
         "pf_weight": PF_WEIGHT,
         "artifact_weight": 1.0 - PF_WEIGHT,
+        "well_pf_weights": WELL_PF_WEIGHTS,
         "rows": int(len(submission)),
         "submission_sha256": sha256_file(out_path),
         "component_pf": str(pf_csv),
