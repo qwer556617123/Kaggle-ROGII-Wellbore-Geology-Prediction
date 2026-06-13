@@ -26,3 +26,4 @@ notebook_pf_artifact_v6,pf_h017_v10_artifact_90_10,"Dynamic PF h0.17 plus no-Tab
 notebook_pf_artifact_v7,pf_h017_v10_artifact_97p5_2p5,"Dynamic PF h0.17 plus no-TabICL v10 artifact inference, 97.5/2.5 blend",artifact_weight_probe,,8.473,"Kaggle notebook rogii-pf-artifact-blend version 7"
 notebook_pf_artifact_v8,pf_h017_v10_artifact_85_15,"Dynamic PF h0.17 plus no-TabICL v10 artifact inference, 85/15 blend",artifact_weight_probe,,,"Kaggle notebook rogii-pf-artifact-blend version 8, pending"
 notebook_pf_artifact_v9,pf_h017_v10_artifact_80_20,"Dynamic PF h0.17 plus no-TabICL v10 artifact inference, 80/20 blend",artifact_weight_probe,,,"Kaggle notebook rogii-pf-artifact-blend version 9, pending"
+notebook_pf_artifact_v10,pf_h017_v10_artifact_82p5_17p5,"Dynamic PF h0.17 plus no-TabICL v10 artifact inference, 82.5/17.5 blend",artifact_weight_curve,,,"Kaggle notebook rogii-pf-artifact-blend version 10, ref 53625463, pending"

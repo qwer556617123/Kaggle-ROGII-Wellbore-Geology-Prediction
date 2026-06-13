@@ -46,6 +46,7 @@ These experiments are inspired by the public physical/PF notebooks. Local CV use
 | `pf_artifact_blend_v7` | Same components as v5, 97.5/2.5 PF/artifact blend | Weight bracket below 5% artifact | 8.473, ref pending | Worse than 5% and 10%; too little artifact |
 | `pf_artifact_blend_v8` | Same components as v5, 85/15 PF/artifact blend | Weight bracket above 10% artifact | pending | Submitted to test whether the optimum is above 10% |
 | `pf_artifact_blend_v9` | Same components as v5, 80/20 PF/artifact blend | Weight bracket above 15% artifact | pending | Submitted to test whether artifact can carry more of the prediction |
+| `pf_artifact_blend_v10` | Same components as v5, 82.5/17.5 PF/artifact blend | Public-LB quadratic interpolation from 2.5%, 5%, and 10% artifact scores estimated optimum near 17% artifact | pending, ref 53625463 | Curve-guided interpolation; should be judged with v8/v9 |
 
 Top selector-grid rows are recorded in `docs/pf_selector_grid_summary.csv`; per-well detail is in `docs/pf_selector_grid_details.csv`.
 The larger 100-well selector comparison is recorded in `docs/pf_bin_selector_cv_summary.csv` and `docs/pf_bin_selector_cv_details.csv`.
