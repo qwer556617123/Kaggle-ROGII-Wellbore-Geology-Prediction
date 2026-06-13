@@ -21,7 +21,7 @@ V10_COMPONENT_CODE = '# %% cell 1\nfrom __future__ import annotations\n\nimport 
 
 WORKING = Path("/kaggle/working") if Path("/kaggle/working").exists() else Path.cwd()
 COMPONENT_ROOT = WORKING / "embedded_components"
-PF_WEIGHT = float(os.getenv("ROGII_BLEND_PF_WEIGHT", "0.95"))
+PF_WEIGHT = float(os.getenv("ROGII_BLEND_PF_WEIGHT", "0.90"))
 PF_WEIGHT = max(0.0, min(1.0, PF_WEIGHT))
 
 
