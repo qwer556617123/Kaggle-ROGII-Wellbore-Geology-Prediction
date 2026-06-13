@@ -34,7 +34,8 @@ The current best public clue is PF/physical modeling rather than another global 
    - `rogii-pf-artifact-blend` now embeds PF h0.17 and v10 artifact inference in one script. Version 5 uses a no-TabICL fallback and 95/5 PF/artifact blend, and improved Public LB to 8.415.
    - Version 6 improved to 8.331 with a 90/10 PF/artifact blend, while version 7 fell to 8.473 with 97.5/2.5. The artifact component is useful, and 2.5% is too conservative.
    - Versions 8, 9, and 10 scored 8.258, 8.204, and 8.271 at 15%, 20%, and 17.5% artifact. The best known point is now 80/20, and the LB trend still favors more artifact.
-   - A quadratic fit to known Public LB MSE points estimates an optimum near 30% artifact. Submit 75/25 and 70/30 next; if 30% improves, test 65/35 or 60/40, otherwise bracket around the best of 20%-30%.
+   - Versions 11 and 12 scored 8.231 and 8.322 at 25% and 30% artifact. The upward sweep is now over; 30% is clearly too much artifact.
+   - Submit one final fine check at 79/21, since local quadratic fits around 20%-30% estimate the optimum near 20.5%-21% artifact. If it does not beat 8.204, stop scalar blend tuning and move to component-level or per-well blending.
    - Learned PF/meta-selector: generate multiple PF candidates per well and train a local meta-model to choose/blend them using pseudo-hidden wells, instead of hand-coded bins.
    - Full-path ensemble search: sample PF trajectories, score them with global GR/event/shape criteria, and average only the best path families; do this carefully because the first path-rerank attempt was too brittle.
    - Formation/contact residual correction: the first row-level residual model was worse than h0.18, so only revisit with strong regularization or well-level corrections.
