@@ -44,9 +44,10 @@ These experiments are inspired by the public physical/PF notebooks. Local CV use
 | `pf_artifact_blend_v5` | Dynamic PF h0.17 plus v10 artifact inference, no-TabICL fallback, 95/5 PF/artifact blend | Kaggle notebook version 5 completed; blend output verified as 5% artifact delta, no NaNs | 8.415, ref 53612723 | Best known LB; artifact signal is useful |
 | `pf_artifact_blend_v6` | Same components as v5, 90/10 PF/artifact blend | Weight bracket above 5% artifact | 8.331, ref pending | Best known LB; artifact signal is strongest so far around 10% |
 | `pf_artifact_blend_v7` | Same components as v5, 97.5/2.5 PF/artifact blend | Weight bracket below 5% artifact | 8.473, ref pending | Worse than 5% and 10%; too little artifact |
-| `pf_artifact_blend_v8` | Same components as v5, 85/15 PF/artifact blend | Weight bracket above 10% artifact | pending | Submitted to test whether the optimum is above 10% |
-| `pf_artifact_blend_v9` | Same components as v5, 80/20 PF/artifact blend | Weight bracket above 15% artifact | pending | Submitted to test whether artifact can carry more of the prediction |
-| `pf_artifact_blend_v10` | Same components as v5, 82.5/17.5 PF/artifact blend | Public-LB quadratic interpolation from 2.5%, 5%, and 10% artifact scores estimated optimum near 17% artifact | pending, ref 53625463 | Curve-guided interpolation; should be judged with v8/v9 |
+| `pf_artifact_blend_v8` | Same components as v5, 85/15 PF/artifact blend | Weight bracket above 10% artifact | 8.258 | Better than 90/10, but not best |
+| `pf_artifact_blend_v9` | Same components as v5, 80/20 PF/artifact blend | Weight bracket above 15% artifact | 8.204 | Best known LB; artifact can carry at least 20% |
+| `pf_artifact_blend_v10` | Same components as v5, 82.5/17.5 PF/artifact blend | Public-LB quadratic interpolation from 2.5%, 5%, and 10% artifact scores estimated optimum near 17% artifact | 8.271, ref 53625463 | Worse than 15% and 20%; curve estimate was too conservative |
+| `pf_artifact_blend_v11` | Same components as v5, 75/25 PF/artifact blend | Public-LB quadratic fit through known 2.5%-20% artifact scores estimates optimum near 30% artifact | pushed, worker queued | Submit after notebook version 11 reaches COMPLETE |
 
 Top selector-grid rows are recorded in `docs/pf_selector_grid_summary.csv`; per-well detail is in `docs/pf_selector_grid_details.csv`.
 The larger 100-well selector comparison is recorded in `docs/pf_bin_selector_cv_summary.csv` and `docs/pf_bin_selector_cv_details.csv`.
