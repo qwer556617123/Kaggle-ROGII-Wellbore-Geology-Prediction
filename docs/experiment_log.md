@@ -49,7 +49,7 @@ These experiments are inspired by the public physical/PF notebooks. Local CV use
 | `pf_artifact_blend_v10` | Same components as v5, 82.5/17.5 PF/artifact blend | Public-LB quadratic interpolation from 2.5%, 5%, and 10% artifact scores estimated optimum near 17% artifact | 8.271, ref 53625463 | Worse than 15% and 20%; curve estimate was too conservative |
 | `pf_artifact_blend_v11` | Same components as v5, 75/25 PF/artifact blend | Public-LB quadratic fit through known 2.5%-20% artifact scores estimates optimum near 30% artifact | 8.231 | Worse than 80/20; 25% artifact is too high |
 | `pf_artifact_blend_v12` | Same components as v5, 70/30 PF/artifact blend | Direct test near the quadratic optimum estimate | 8.322 | Clear over-blend; stop upward sweep |
-| `pf_artifact_blend_v13` | Same components as v5, 79/21 PF/artifact blend | Local curve through 20/25/30 and 15/20/25 estimates optimum around 20.5%-21% artifact | pushed, worker queued | Submit after notebook version 13 reaches COMPLETE; final fine check near current best |
+| `pf_artifact_blend_v13` | Same components as v5, 79/21 PF/artifact blend | Local curve through 20/25/30 and 15/20/25 estimates optimum around 20.5%-21% artifact | notebook complete, not submitted | Submit after quota reset; final fine check near current best |
 
 Top selector-grid rows are recorded in `docs/pf_selector_grid_summary.csv`; per-well detail is in `docs/pf_selector_grid_details.csv`.
 The larger 100-well selector comparison is recorded in `docs/pf_bin_selector_cv_summary.csv` and `docs/pf_bin_selector_cv_details.csv`.
