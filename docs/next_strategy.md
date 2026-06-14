@@ -35,7 +35,8 @@ The current best public clue is PF/physical modeling rather than another global 
    - Version 6 improved to 8.331 with a 90/10 PF/artifact blend, while version 7 fell to 8.473 with 97.5/2.5. The artifact component is useful, and 2.5% is too conservative.
    - Versions 8, 9, and 10 scored 8.258, 8.204, and 8.271 at 15%, 20%, and 17.5% artifact. The best known point is now 80/20, and the LB trend still favors more artifact.
    - Versions 11 and 12 scored 8.231 and 8.322 at 25% and 30% artifact. The upward sweep is now over; 30% is clearly too much artifact.
-   - Submit one final fine check at 79/21, since local quadratic fits around 20%-30% estimate the optimum near 20.5%-21% artifact. If it does not beat 8.204, stop scalar blend tuning and move to component-level or per-well blending.
+   - Version 13 scored 8.269 at 21% artifact, and versions 14/15 scored 8.275/8.229 when only `00bbac68` was pushed to 25%/30% artifact. Stop scalar and simple per-well artifact weight tuning.
+   - Move to component-level artifact ablations next. First target: v10 artifact's exact train-coordinate overlap blend, because direct train lookup was poor but the artifact component currently includes a default overlap blend.
    - Learned PF/meta-selector: generate multiple PF candidates per well and train a local meta-model to choose/blend them using pseudo-hidden wells, instead of hand-coded bins.
    - Full-path ensemble search: sample PF trajectories, score them with global GR/event/shape criteria, and average only the best path families; do this carefully because the first path-rerank attempt was too brittle.
    - Formation/contact residual correction: the first row-level residual model was worse than h0.18, so only revisit with strong regularization or well-level corrections.

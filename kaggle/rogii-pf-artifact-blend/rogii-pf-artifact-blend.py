@@ -27,6 +27,8 @@ WELL_PF_WEIGHTS = {
     str(k): max(0.0, min(1.0, float(v)))
     for k, v in json.loads(os.getenv("ROGII_BLEND_WELL_PF_WEIGHTS", "{}")).items()
 }
+ARTIFACT_EXACT_OVERLAP = os.getenv("ROGII_ARTIFACT_EXACT_OVERLAP", "")
+ARTIFACT_EXACT_BLEND_WEIGHT = os.getenv("ROGII_ARTIFACT_EXACT_BLEND_WEIGHT", "")
 
 
 def write_component(name: str, code: str) -> Path:
@@ -106,16 +108,21 @@ def main() -> None:
             "ROGII_USE_VISIBLE_PHYSICAL": "0",
         },
     )
+    artifact_env = {
+        "ROGII_INFERENCE_ONLY": "1",
+        "ROGII_SAVE_ARTIFACTS": "0",
+        "ROGII_RUN_TABICL": os.getenv("ROGII_RUN_TABICL", "0"),
+        "ROGII_FORCE_CPU": "1",
+    }
+    if ARTIFACT_EXACT_OVERLAP:
+        artifact_env["ROGII_EXACT_OVERLAP"] = ARTIFACT_EXACT_OVERLAP
+    if ARTIFACT_EXACT_BLEND_WEIGHT:
+        artifact_env["ROGII_EXACT_BLEND_WEIGHT"] = ARTIFACT_EXACT_BLEND_WEIGHT
     artifact_csv = run_component(
         "v10_artifact",
         artifact_script,
         WORKING / "component_v10_artifact",
-        {
-            "ROGII_INFERENCE_ONLY": "1",
-            "ROGII_SAVE_ARTIFACTS": "0",
-            "ROGII_RUN_TABICL": os.getenv("ROGII_RUN_TABICL", "0"),
-            "ROGII_FORCE_CPU": "1",
-        },
+        artifact_env,
     )
 
     pf = read_component(pf_csv, sample, "pf")
@@ -132,6 +139,8 @@ def main() -> None:
         "pf_weight": PF_WEIGHT,
         "artifact_weight": 1.0 - PF_WEIGHT,
         "well_pf_weights": WELL_PF_WEIGHTS,
+        "artifact_exact_overlap": ARTIFACT_EXACT_OVERLAP or "component_default",
+        "artifact_exact_blend_weight": ARTIFACT_EXACT_BLEND_WEIGHT or "component_default",
         "rows": int(len(submission)),
         "submission_sha256": sha256_file(out_path),
         "component_pf": str(pf_csv),
