@@ -27,7 +27,7 @@ WELL_PF_WEIGHTS = {
     str(k): max(0.0, min(1.0, float(v)))
     for k, v in json.loads(os.getenv("ROGII_BLEND_WELL_PF_WEIGHTS", "{}")).items()
 }
-ARTIFACT_EXACT_OVERLAP = os.getenv("ROGII_ARTIFACT_EXACT_OVERLAP", "")
+ARTIFACT_EXACT_OVERLAP = os.getenv("ROGII_ARTIFACT_EXACT_OVERLAP", "0")
 ARTIFACT_EXACT_BLEND_WEIGHT = os.getenv("ROGII_ARTIFACT_EXACT_BLEND_WEIGHT", "")
 
 
