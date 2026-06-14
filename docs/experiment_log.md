@@ -52,6 +52,8 @@ These experiments are inspired by the public physical/PF notebooks. Local CV use
 | `pf_artifact_blend_v13` | Same components as v5, 79/21 PF/artifact blend | Local curve through 20/25/30 and 15/20/25 estimates optimum around 20.5%-21% artifact | 8.269, ref 53660371 | Worse than 80/20; stop scalar weight fine-tuning |
 | `pf_artifact_blend_v14` | Scalar 80/20, but `00bbac68` uses 75/25 | Per-well probe: keep `00e12e8b` at 20% artifact to avoid over-lowering, raise only `00bbac68` | 8.275, ref 53660387 | Worse; this per-well artifact increase does not help |
 | `pf_artifact_blend_v15` | Scalar 80/20, but `00bbac68` uses 70/30 | Stronger version of v14; tests whether `00bbac68` benefits from more artifact when `00e12e8b` is protected | 8.229, ref 53660388 | Worse; stop `00bbac68`-only artifact increase |
+| `pf_artifact_blend_v16` | Same as v9 80/20, but v10 artifact exact overlap disabled | Component ablation: direct train lookup was poor, so test whether artifact exact-coordinate blend is hurting | notebook complete, not submitted | Submit next |
+| `pf_artifact_blend_v17` | Same as v9 80/20, but v10 artifact exact overlap weight lowered to 0.10 | Softer component ablation: keep exact overlap but reduce default 0.28 strength | notebook complete, not submitted | Submit next |
 
 Top selector-grid rows are recorded in `docs/pf_selector_grid_summary.csv`; per-well detail is in `docs/pf_selector_grid_details.csv`.
 The larger 100-well selector comparison is recorded in `docs/pf_bin_selector_cv_summary.csv` and `docs/pf_bin_selector_cv_details.csv`.
