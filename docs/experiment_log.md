@@ -54,10 +54,10 @@ These experiments are inspired by the public physical/PF notebooks. Local CV use
 | `pf_artifact_blend_v15` | Scalar 80/20, but `00bbac68` uses 70/30 | Stronger version of v14; tests whether `00bbac68` benefits from more artifact when `00e12e8b` is protected | 8.229, ref 53660388 | Worse; stop `00bbac68`-only artifact increase |
 | `pf_artifact_blend_v16` | Same as v9 80/20, but v10 artifact exact overlap disabled | Component ablation: direct train lookup was poor, so test whether artifact exact-coordinate blend is hurting | 8.130, ref 53664697 | Best known LB; exact overlap is hurting this blend |
 | `pf_artifact_blend_v17` | Same as v9 80/20, but v10 artifact exact overlap weight lowered to 0.10 | Softer component ablation: keep exact overlap but reduce default 0.28 strength | 8.199, ref 53664696 | Slight gain vs v9 but worse than disabling exact overlap |
-| `pf_artifact_blend_v18` | No-exact artifact, 85/15 PF/artifact blend | Re-bracket the blend weight after removing exact overlap | submitted/pending, ref 53706983 | Compare against v16 8.130 |
-| `pf_artifact_blend_v19` | No-exact artifact, 82.5/17.5 PF/artifact blend | Re-bracket the blend weight after removing exact overlap | submitted/pending, ref 53706980 | Compare against v16 8.130 |
-| `pf_artifact_blend_v20` | No-exact artifact, 77.5/22.5 PF/artifact blend | Re-bracket the blend weight after removing exact overlap | submitted/pending, ref 53706981 | Compare against v16 8.130 |
-| `pf_artifact_blend_v21` | No-exact artifact, 75/25 PF/artifact blend | Wider right-side check for the no-exact artifact optimum | submitted/pending, ref 53706984 | Compare against v16 8.130 |
+| `pf_artifact_blend_v18` | No-exact artifact, 85/15 PF/artifact blend | Re-bracket the blend weight after removing exact overlap | 8.235, ref 53706983 | Worse than v16; too little artifact |
+| `pf_artifact_blend_v19` | No-exact artifact, 82.5/17.5 PF/artifact blend | Re-bracket the blend weight after removing exact overlap | 8.262, ref 53706980 | Worse than v16; too little artifact |
+| `pf_artifact_blend_v20` | No-exact artifact, 77.5/22.5 PF/artifact blend | Re-bracket the blend weight after removing exact overlap | 8.275, ref 53706981 | Anomalously worse than both 80/20 and 75/25; audit before trusting curve |
+| `pf_artifact_blend_v21` | No-exact artifact, 75/25 PF/artifact blend | Wider right-side check for the no-exact artifact optimum | 8.131, ref 53706984 | Near-tie with v16; no clear improvement |
 
 Top selector-grid rows are recorded in `docs/pf_selector_grid_summary.csv`; per-well detail is in `docs/pf_selector_grid_details.csv`.
 The larger 100-well selector comparison is recorded in `docs/pf_bin_selector_cv_summary.csv` and `docs/pf_bin_selector_cv_details.csv`.

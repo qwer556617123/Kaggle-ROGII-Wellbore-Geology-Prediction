@@ -144,10 +144,13 @@ def main() -> None:
         "rows": int(len(submission)),
         "submission_sha256": sha256_file(out_path),
         "component_pf": str(pf_csv),
+        "component_pf_sha256": sha256_file(pf_csv),
         "component_artifact": str(artifact_csv),
+        "component_artifact_sha256": sha256_file(artifact_csv),
         "mean_abs_component_gap": float(abs(disagreement).mean()),
         "max_abs_component_gap": float(abs(disagreement).max()),
     }
+    (WORKING / "blend_summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
     print(json.dumps(summary, indent=2), flush=True)
     print(submission.head(8).to_string(index=False), flush=True)
 
