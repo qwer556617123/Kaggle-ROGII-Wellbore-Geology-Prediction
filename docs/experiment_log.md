@@ -58,6 +58,7 @@ These experiments are inspired by the public physical/PF notebooks. Local CV use
 | `pf_artifact_blend_v19` | No-exact artifact, 82.5/17.5 PF/artifact blend | Re-bracket the blend weight after removing exact overlap | 8.262, ref 53706980 | Worse than v16; too little artifact |
 | `pf_artifact_blend_v20` | No-exact artifact, 77.5/22.5 PF/artifact blend | Re-bracket the blend weight after removing exact overlap | 8.275, ref 53706981 | Anomalously worse than both 80/20 and 75/25; audit before trusting curve |
 | `pf_artifact_blend_v21` | No-exact artifact, 75/25 PF/artifact blend | Wider right-side check for the no-exact artifact optimum | 8.131, ref 53706984 | Near-tie with v16; no clear improvement |
+| `pf_artifact_blend_v22` | Audit rerun of no-exact 80/20 with durable output summary | Confirm the actual Kaggle-rerun settings and component hashes after the non-convex v18-v21 bracket | not submitted | Output verified: `artifact_exact_overlap=0`, PF/artifact 80/20, submission SHA256 `7e6a4305c420ab4e38a9a8afafcf81b6320b1c4f8e46af01c6dd6c4adb863717`; use as audit baseline, not a new score |
 
 Top selector-grid rows are recorded in `docs/pf_selector_grid_summary.csv`; per-well detail is in `docs/pf_selector_grid_details.csv`.
 The larger 100-well selector comparison is recorded in `docs/pf_bin_selector_cv_summary.csv` and `docs/pf_bin_selector_cv_details.csv`.
