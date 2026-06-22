@@ -63,6 +63,7 @@ These experiments are inspired by the public physical/PF notebooks. Local CV use
 | `pf_artifact_blend_v23` | No-exact artifact; scalar 80/20 except `00e12e8b` at 75/25 | Component-gap audit shows PF is about 21 ft above artifact on `00e12e8b`, while the other two wells have much smaller component gaps | 8.233, ref 53747821 | Worse than v16/v21; e12-only artifact increase does not explain the global 75/25 near-tie |
 | `pf_artifact_blend_v24` | No-exact artifact; scalar 80/20 except `00e12e8b` at 70/30 | Stronger e12-only version of v23 | 8.210, ref 53747937 | Still worse; stop e12-only artifact weight tuning |
 | `pf_artifact_blend_v25` | No-exact artifact 80/20, but replace fixed h0.17 PF with `uncertainty_selector` PF | Test whether dynamic PF hold/beam uncertainty changes the three public wells in a useful way when artifact stack remains fixed | pending | CPU-safe new component probe; not a scalar weight tune |
+| `pf_artifact_blend_v26` | Fixed h0.17 PF plus no-exact artifact 80/20, but enable TabICL on Kaggle GPU | Test whether the artifact stack's TabICL component changes residual structure enough to escape the 8.13 plateau | pending | Large component probe; expected to run much longer than CPU/no-TabICL versions |
 
 Top selector-grid rows are recorded in `docs/pf_selector_grid_summary.csv`; per-well detail is in `docs/pf_selector_grid_details.csv`.
 The larger 100-well selector comparison is recorded in `docs/pf_bin_selector_cv_summary.csv` and `docs/pf_bin_selector_cv_details.csv`.

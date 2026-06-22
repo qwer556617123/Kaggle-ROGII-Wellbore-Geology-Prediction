@@ -21,7 +21,7 @@ V10_COMPONENT_CODE = '# %% cell 1\nfrom __future__ import annotations\n\nimport 
 
 WORKING = Path("/kaggle/working") if Path("/kaggle/working").exists() else Path.cwd()
 COMPONENT_ROOT = WORKING / "embedded_components"
-PF_VARIANT = os.getenv("ROGII_BLEND_PF_VARIANT", "uncertainty_selector")
+PF_VARIANT = os.getenv("ROGII_BLEND_PF_VARIANT", "grid_s3_b0_h0p17")
 PF_WEIGHT = float(os.getenv("ROGII_BLEND_PF_WEIGHT", "0.80"))
 PF_WEIGHT = max(0.0, min(1.0, PF_WEIGHT))
 WELL_PF_WEIGHTS = {
@@ -32,8 +32,8 @@ WELL_PF_WEIGHTS = {
 }
 ARTIFACT_EXACT_OVERLAP = os.getenv("ROGII_ARTIFACT_EXACT_OVERLAP", "0")
 ARTIFACT_EXACT_BLEND_WEIGHT = os.getenv("ROGII_ARTIFACT_EXACT_BLEND_WEIGHT", "")
-ARTIFACT_RUN_TABICL = os.getenv("ROGII_ARTIFACT_RUN_TABICL", "0")
-ARTIFACT_FORCE_CPU = os.getenv("ROGII_ARTIFACT_FORCE_CPU", "1")
+ARTIFACT_RUN_TABICL = os.getenv("ROGII_ARTIFACT_RUN_TABICL", "1")
+ARTIFACT_FORCE_CPU = os.getenv("ROGII_ARTIFACT_FORCE_CPU", "0")
 
 
 def write_component(name: str, code: str) -> Path:
