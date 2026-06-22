@@ -44,6 +44,8 @@ The current best public clue is PF/physical modeling rather than another global 
    - The next larger change is to keep no-exact 80/20, but run the v10 artifact stack with TabICL enabled on Kaggle GPU. The first push attempt was blocked by Kaggle's 30-hour weekly GPU quota, so keep the notebook default CPU/no-TabICL until quota resets.
    - While GPU is blocked, the only CPU-safe probe worth spending on is per-well no-exact weighting. The v22 component audit shows `00e12e8b` has the largest PF-artifact disagreement, so test `00e12e8b` at 75/25 and 70/30 while keeping the other wells at 80/20.
    - After submitting per-well probes, restore the notebook default to the known best no-exact 80/20 until a pending score proves otherwise.
+   - Versions 23 and 24 scored 8.233 and 8.210 for `00e12e8b` at 75/25 and 70/30. This rejects e12-only artifact weight tuning; the 75/25 global near-tie either comes from another well, rerun variance, or a coupled effect that simple per-well weighting is not capturing.
+   - Do not spend more submissions on scalar or one-well PF/artifact weights unless a new diagnostic identifies a different mechanism.
    - Learned PF/meta-selector: generate multiple PF candidates per well and train a local meta-model to choose/blend them using pseudo-hidden wells, instead of hand-coded bins.
    - Full-path ensemble search: sample PF trajectories, score them with global GR/event/shape criteria, and average only the best path families; do this carefully because the first path-rerank attempt was too brittle.
    - Formation/contact residual correction: the first row-level residual model was worse than h0.18, so only revisit with strong regularization or well-level corrections.
