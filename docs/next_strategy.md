@@ -47,7 +47,8 @@ The current best public clue is PF/physical modeling rather than another global 
    - Versions 23 and 24 scored 8.233 and 8.210 for `00e12e8b` at 75/25 and 70/30. This rejects e12-only artifact weight tuning; the 75/25 global near-tie either comes from another well, rerun variance, or a coupled effect that simple per-well weighting is not capturing.
    - Do not spend more submissions on scalar or one-well PF/artifact weights unless a new diagnostic identifies a different mechanism.
    - Next CPU-safe component probe: keep no-exact artifact 80/20 but swap the PF component from fixed h0.17 to `uncertainty_selector`, testing dynamic hold/beam behavior without changing blend weight.
-   - Next large component probe: restore fixed h0.17 PF and run the no-exact artifact stack with TabICL enabled on Kaggle GPU. This is the highest-leverage route left in the current public-notebook family.
+   - The TabICL/GPU probe was blocked by Kaggle runtime: metadata accepted T4x2, but torch inside the selected image was CPU-only and failed at `device="cuda"`. Do not retry TabICL until the docker image/runtime mismatch is fixed.
+   - Fallback CPU-safe component probe: keep no-exact artifact 80/20 but swap fixed h0.17 PF for `bin_lb_safe`, testing per-bin PF meta-selection without changing blend weight.
    - Learned PF/meta-selector: generate multiple PF candidates per well and train a local meta-model to choose/blend them using pseudo-hidden wells, instead of hand-coded bins.
    - Full-path ensemble search: sample PF trajectories, score them with global GR/event/shape criteria, and average only the best path families; do this carefully because the first path-rerank attempt was too brittle.
    - Formation/contact residual correction: the first row-level residual model was worse than h0.18, so only revisit with strong regularization or well-level corrections.
