@@ -21,6 +21,7 @@ V10_COMPONENT_CODE = '# %% cell 1\nfrom __future__ import annotations\n\nimport 
 
 WORKING = Path("/kaggle/working") if Path("/kaggle/working").exists() else Path.cwd()
 COMPONENT_ROOT = WORKING / "embedded_components"
+PF_VARIANT = os.getenv("ROGII_BLEND_PF_VARIANT", "uncertainty_selector")
 PF_WEIGHT = float(os.getenv("ROGII_BLEND_PF_WEIGHT", "0.80"))
 PF_WEIGHT = max(0.0, min(1.0, PF_WEIGHT))
 WELL_PF_WEIGHTS = {
@@ -106,7 +107,7 @@ def main() -> None:
         pf_script,
         WORKING / "component_pf_h017",
         {
-            "ROGII_VARIANT": "grid_s3_b0_h0p17",
+            "ROGII_VARIANT": PF_VARIANT,
             "ROGII_N_SEEDS": os.getenv("ROGII_N_SEEDS", "64"),
             "ROGII_N_PARTICLES": os.getenv("ROGII_N_PARTICLES", "160"),
             "ROGII_USE_VISIBLE_PHYSICAL": "0",
@@ -141,6 +142,7 @@ def main() -> None:
     disagreement = pf["tvt"].to_numpy(float) - artifact["tvt"].to_numpy(float)
     summary = {
         "pf_weight": PF_WEIGHT,
+        "pf_variant": PF_VARIANT,
         "artifact_weight": 1.0 - PF_WEIGHT,
         "well_pf_weights": WELL_PF_WEIGHTS,
         "artifact_exact_overlap": ARTIFACT_EXACT_OVERLAP or "component_default",
