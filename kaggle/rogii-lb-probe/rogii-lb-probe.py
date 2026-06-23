@@ -96,9 +96,18 @@ def apply_probe(
 def main() -> None:
     script_dir = Path(__file__).resolve().parent if "__file__" in globals() else Path.cwd()
     working = Path("/kaggle/working") if Path("/kaggle/working").exists() else Path.cwd()
-    base_path = script_dir / BASE_FILENAME
-    if not base_path.exists():
-        raise FileNotFoundError(f"Base submission not found: {base_path}")
+    base_candidates = [
+        script_dir / BASE_FILENAME,
+        Path.cwd() / BASE_FILENAME,
+        script_dir.parent / "datasets" / "rogii-v22-base-submission" / BASE_FILENAME,
+    ]
+    input_root = Path("/kaggle/input")
+    if input_root.exists():
+        base_candidates.extend(input_root.glob(f"**/{BASE_FILENAME}"))
+    base_path = next((path for path in base_candidates if path.exists()), None)
+    if base_path is None:
+        searched = [str(path) for path in base_candidates]
+        raise FileNotFoundError(f"Base submission not found. Searched: {searched}")
 
     base_hash = sha256_file(base_path)
     if base_hash != BASE_SHA256:
