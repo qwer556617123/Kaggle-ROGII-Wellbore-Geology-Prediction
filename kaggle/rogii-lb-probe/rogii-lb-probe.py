@@ -120,6 +120,7 @@ def main() -> None:
     probed, operations = apply_probe(base, PROBE_OFFSETS, PROBE_TRENDS)
 
     sample_path = find_sample()
+    fallback = None
     if sample_path is not None:
         sample = pd.read_csv(sample_path)[["id"]]
         aligned = sample.merge(probed, on="id", how="left")
@@ -130,7 +131,6 @@ def main() -> None:
         probed = aligned
     else:
         missing = 0
-        fallback = None
 
     out_path = working / "submission.csv"
     probed[["id", "tvt"]].to_csv(out_path, index=False)
