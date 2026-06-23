@@ -39,3 +39,6 @@ If this pair shows signal, convert the score delta into an estimated optimal off
 - Do not mix multiple new bases in one probe submission.
 - Keep all probe outputs tied to their base submission hash.
 - Treat this as Public-LB optimization; document overfit risk explicitly.
+- Do not use a fixed public-test submission as a Kaggle notebook input. This competition
+  reruns notebooks with a substituted test set, so fixed public IDs can silently miss
+  the rerun sample and produce invalid fallback predictions.

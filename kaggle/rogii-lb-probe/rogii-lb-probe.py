@@ -126,8 +126,10 @@ def main() -> None:
         aligned = sample.merge(probed, on="id", how="left")
         missing = int(aligned["tvt"].isna().sum())
         if missing:
-            fallback = float(probed["tvt"].mean())
-            aligned["tvt"] = aligned["tvt"].fillna(fallback)
+            raise RuntimeError(
+                f"Fixed base submission does not match rerun sample: {missing}/{len(aligned)} missing ids. "
+                "This probe notebook is not valid for code-competition reruns."
+            )
         probed = aligned
     else:
         missing = 0
