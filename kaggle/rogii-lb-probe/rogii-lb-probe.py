@@ -17,8 +17,8 @@ import pandas as pd
 
 BASE_FILENAME = "base_v22_noexact80_submission.csv"
 BASE_SHA256 = "7e6a4305c420ab4e38a9a8afafcf81b6320b1c4f8e46af01c6dd6c4adb863717"
-PROBE_LABEL = os.getenv("ROGII_PROBE_LABEL", "e12_offset_plus10")
-PROBE_OFFSETS = json.loads(os.getenv("ROGII_PROBE_OFFSETS", '{"00e12e8b": 10.0}'))
+PROBE_LABEL = os.getenv("ROGII_PROBE_LABEL", "e12_offset_minus10")
+PROBE_OFFSETS = json.loads(os.getenv("ROGII_PROBE_OFFSETS", '{"00e12e8b": -10.0}'))
 PROBE_TRENDS = json.loads(os.getenv("ROGII_PROBE_TRENDS", "{}"))
 
 
