@@ -49,6 +49,8 @@ The current best public clue is PF/physical modeling rather than another global 
    - Next CPU-safe component probe: keep no-exact artifact 80/20 but swap the PF component from fixed h0.17 to `uncertainty_selector`, testing dynamic hold/beam behavior without changing blend weight.
    - The TabICL/GPU probe was blocked by Kaggle runtime: metadata accepted T4x2, but torch inside the selected image was CPU-only and failed at `device="cuda"`. Do not retry TabICL until the docker image/runtime mismatch is fixed.
    - Fallback CPU-safe component probe: keep no-exact artifact 80/20 but swap fixed h0.17 PF for `bin_lb_safe`, testing per-bin PF meta-selection without changing blend weight.
+   - Versions 25 and 27 scored 8.373 and 8.282, so PF selector swaps are rejected. The public notebooks explain the current 8.x family, but do not by themselves explain a 6.x score.
+   - Next breakthrough path: use Public LB as a low-dimensional residual probe. Generate symmetric perturbations around the v16/v22 baseline by well and by smooth trend basis, then use score differences to estimate the residual projection and construct a calibrated correction. This should replace further component guessing.
    - Learned PF/meta-selector: generate multiple PF candidates per well and train a local meta-model to choose/blend them using pseudo-hidden wells, instead of hand-coded bins.
    - Full-path ensemble search: sample PF trajectories, score them with global GR/event/shape criteria, and average only the best path families; do this carefully because the first path-rerank attempt was too brittle.
    - Formation/contact residual correction: the first row-level residual model was worse than h0.18, so only revisit with strong regularization or well-level corrections.
