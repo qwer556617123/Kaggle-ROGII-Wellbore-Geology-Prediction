@@ -67,6 +67,8 @@ The current best public clue is PF/physical modeling rather than another global 
    - Learned PF/meta-selector: generate multiple PF candidates per well and train a local meta-model to choose/blend them using pseudo-hidden wells, instead of hand-coded bins.
    - Full-path ensemble search: sample PF trajectories, score them with global GR/event/shape criteria, and average only the best path families; do this carefully because the first path-rerank attempt was too brittle.
    - Formation/contact residual correction: the first row-level residual model was worse than h0.18, so only revisit with strong regularization or well-level corrections.
+   - Contact geometry diagnostic reset: actual train formation contact columns plus a known-segment offset reconstruct TVT almost exactly (`~0.006 ft` local RMSE), but hidden/test files do not expose those columns. The practical task is therefore reconstructing missing contact surfaces from train X/Y before applying the offset formula.
+   - First contact-surface results: KNN surface imputation is usable but not yet best (`EGFDL_k64_tail_mean` smoke row RMSE `9.087`); LightGBM surface extrapolation is rejected (`20.336`). Submit one KNN surface probe only to measure hidden LB signal, not as a claimed best model.
 5. Avoid another small submission unless it tests one of the larger changes above.
 6. Reconstruct v13 predictions for all three test wells and save a compact per-well trend table:
    - start TVT, end TVT, net change, min, max, standard deviation;

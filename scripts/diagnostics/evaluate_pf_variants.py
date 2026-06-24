@@ -168,6 +168,56 @@ def tvt_from_contacts(hw: pd.DataFrame, tw: pd.DataFrame, ref_col: str = "EGFDU"
     return (ref_tvt - (hw["Z"] - hw[ref_col]) + offset).to_numpy(dtype=float)
 
 
+def contact_ref(hw: pd.DataFrame, tw: pd.DataFrame, preferred: str = "EGFDU") -> tuple[str | None, float | None]:
+    """Pick a formation contact that exists in both files."""
+    tw_g = tw.dropna(subset=["Geology"]).copy()
+    if tw_g.empty:
+        return None, None
+    candidates = [preferred, *tw_g["Geology"].dropna().astype(str).tolist()]
+    for col in candidates:
+        if col in hw.columns:
+            ref = tw_g.loc[tw_g["Geology"].astype(str) == col, "TVT"].min()
+            if pd.notna(ref):
+                return col, float(ref)
+    return None, None
+
+
+def tvt_from_known_contacts(
+    hw: pd.DataFrame,
+    tw: pd.DataFrame,
+    mode: str = "tail_median",
+    ref_col: str = "EGFDU",
+) -> np.ndarray:
+    """Contact TVT path using only known TVT_input rows for the vertical offset."""
+    col, ref_tvt = contact_ref(hw, tw, ref_col)
+    known = hw["TVT_input"].notna().to_numpy()
+    if col is None or ref_tvt is None or col not in hw.columns or int(known.sum()) < 8:
+        return hw["TVT_input"].ffill().bfill().to_numpy(dtype=float)
+
+    base = ref_tvt - (hw["Z"].to_numpy(dtype=float) - hw[col].to_numpy(dtype=float))
+    valid = known & np.isfinite(base)
+    if int(valid.sum()) < 8:
+        return hw["TVT_input"].ffill().bfill().to_numpy(dtype=float)
+
+    known_idx = np.where(valid)[0]
+    residual = hw.loc[valid, "TVT_input"].to_numpy(dtype=float) - base[valid]
+    if mode.startswith("tail"):
+        n_tail = min(80, max(12, len(residual) // 3))
+        residual = residual[-n_tail:]
+    if mode.endswith("mean"):
+        weights = np.linspace(0.35, 1.0, len(residual))
+        offset = float(np.average(residual, weights=weights))
+    else:
+        offset = float(np.median(residual))
+
+    pred = base + offset
+    if not np.isfinite(pred).all():
+        anchor = hw["TVT_input"].ffill().bfill().to_numpy(dtype=float)
+        pred = np.where(np.isfinite(pred), pred, anchor)
+    pred[known_idx] = hw.loc[valid, "TVT_input"].to_numpy(dtype=float)
+    return pred.astype(float)
+
+
 def run_particle_filter(
     hw: pd.DataFrame,
     tw: pd.DataFrame,
@@ -485,6 +535,12 @@ def predict_variants(
     for variant in variants:
         if variant == "contact_physics":
             predictions[variant] = tvt_from_contacts(hw, tw)
+        elif variant == "contact_safe":
+            predictions[variant] = tvt_from_known_contacts(hw, tw, mode="median")
+        elif variant == "contact_safe_tail":
+            predictions[variant] = tvt_from_known_contacts(hw, tw, mode="tail_median")
+        elif variant == "contact_safe_tail_mean":
+            predictions[variant] = tvt_from_known_contacts(hw, tw, mode="tail_mean")
         elif variant == "pf_scale_8":
             predictions[variant] = pf_by_scale["pf_scale_8"]
         elif variant == "beam_event":

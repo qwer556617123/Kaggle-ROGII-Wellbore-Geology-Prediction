@@ -68,12 +68,16 @@ These experiments are inspired by the public physical/PF notebooks. Local CV use
 | `pf_artifact_blend_v28` | Fixed h0.17 PF plus no-exact artifact 80/20; TabICL enabled on Kaggle CUDA image | Retry v26 with the public kojimar CUDA docker image and `NvidiaTeslaT4` shape so torch has CUDA support | 8.211, ref 53995237 | Worse than no-TabICL v16/v21; do not continue full TabICL GPU branch without a smaller ablation |
 | `lb_probe_e12_plus10_fixed_base` | Fixed v22 public-test base submission plus `00e12e8b` +10 ft offset | Fast probe notebook completed, but code competition rerun used a substituted sample that did not match fixed public IDs | 765.973, ref 53987551 | Invalid method; do not submit fixed-base probes. Any probe must be applied inside a notebook that recomputes predictions for the rerun test set |
 | `pf_artifact_blend_v29` | No-TabICL no-exact artifact; dynamic rerun-aware PF/artifact weight: highest component-gap well uses 75/25, others 80/20 | Replace invalid public-ID probing with a rule that acts on whichever hidden-rerun well has the largest PF/artifact disagreement | 8.266, ref 54011314 | Worse than v16/v21; stop PF/artifact blend-weight tuning, including dynamic component-gap rules |
+| `contact_safe_diagnostic` | Use actual train formation contact columns plus known `TVT_input` offset on pseudo-hidden masks | Test whether contact geometry itself can explain the missing signal | hidden-rerun masks row RMSE 0.0055; native masks row RMSE 0.0056 | Diagnostic only | Very strong but not directly submit-safe: test horizontal/typewell files do not include formation contact columns or `Geology` labels |
+| `spatial_contact_surface_knn` | Predict missing contact surface from other train wells by X/Y KNN, then estimate offset from known `TVT_input` | Make the contact signal hidden-rerun safe by reconstructing the missing formation surface | smoke best `EGFDL_k64_tail_mean` row RMSE 9.087, well mean 7.890 | pending probe | Worth one LB probe because it is orthogonal to PF, but local CV is not yet strong enough to replace v16/v21 |
+| `spatial_contact_surface_lgbm` | Predict contact surface with LightGBM from X/Y features | Check whether supervised surface modeling beats KNN interpolation | smoke best row RMSE 20.336 | not submitted | Reject; tree surface extrapolation is unstable in leave-one-well-out |
 
 Top selector-grid rows are recorded in `docs/pf_selector_grid_summary.csv`; per-well detail is in `docs/pf_selector_grid_details.csv`.
 The larger 100-well selector comparison is recorded in `docs/pf_bin_selector_cv_summary.csv` and `docs/pf_bin_selector_cv_details.csv`.
 The fast runtime check is recorded in `docs/pf_fast_selector_cv_summary.csv` and `docs/pf_fast_selector_cv_details.csv`.
 The fast hold sweep is recorded in `docs/pf_fast_hold_sweep_summary.csv` and `docs/pf_fast_hold_sweep_details.csv`.
 The rejected residual correction check is recorded in `docs/pf_residual_summary.csv`.
+The hidden-rerun contact checks are recorded in `docs/hidden_rerun_contact_cv_summary.csv`, `docs/contact_safe_native_mask_summary.csv`, and `docs/spatial_contact_surface_*summary.csv`.
 
 ## Low Priority Branches
 

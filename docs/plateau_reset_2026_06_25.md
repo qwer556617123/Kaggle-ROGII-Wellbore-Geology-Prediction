@@ -40,6 +40,11 @@ The local validation target should become pseudo-hidden train wells with rerun-l
    - Match distributions of known fraction, eval length, Z span, GR missingness, and tail GR variance.
    - Use this as a rejection gate before any new submission.
 
+   Current update:
+   - The medium hidden-rerun PF check confirms fixed `grid_s3_b0_h0p17` is still the best of the tested PF selectors, but it only confirms the existing plateau.
+   - The original `contact_physics` diagnostic is leaky because it uses full train `TVT`; it must not be used as a submission argument.
+   - A legal train-only contact diagnostic using actual formation columns and known `TVT_input` offset scores near zero locally, but the test schema does not expose those contact columns.
+
 2. Learned path/meta-selector
    - Generate a matrix of candidate paths per pseudo-hidden well: PF scales, hold values, beam variants, anchor, formation/contact, artifact-style features where available.
    - Train a well-level selector or constrained stacker using only pre-PS features and candidate diagnostics.
@@ -54,8 +59,15 @@ The local validation target should become pseudo-hidden train wells with rerun-l
    - If using TabICL again, run one small branch only: one context size, one seed, no full A+B run.
    - Submit only if local pseudo-hidden CV shows a different error profile from the current artifact stack.
 
+5. Contact-surface reconstruction
+   - Train wells contain formation contact columns that almost exactly reconstruct TVT after a per-well offset.
+   - Test wells do not contain those columns, so the submit-safe problem is now contact-surface imputation, not direct contact geometry.
+   - KNN surface smoke reaches about 9.09 row RMSE on six leave-one-well-out wells; LightGBM surface extrapolation is worse at about 20.34.
+   - Submit at most one contact-surface probe to measure hidden LB signal, then continue only if it lands near or below the PF/artifact plateau.
+
 ## Immediate Action
 
 The initial hidden-rerun CV harness now lives at `scripts/diagnostics/evaluate_hidden_rerun_masks.py`.
+The contact-surface harness lives at `scripts/diagnostics/evaluate_spatial_contact_surfaces.py`.
 
 Next, run a broader comparison over more wells and masks. Until that table exists, additional submissions are mostly blind. The next submitted notebook should be backed by a local pseudo-hidden rank table, not by another public-LB guess.
