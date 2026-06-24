@@ -56,4 +56,6 @@ The local validation target should become pseudo-hidden train wells with rerun-l
 
 ## Immediate Action
 
-Implement the hidden-rerun CV harness first. Until that exists, additional submissions are mostly blind. The next submitted notebook should be backed by a local pseudo-hidden rank table, not by another public-LB guess.
+The initial hidden-rerun CV harness now lives at `scripts/diagnostics/evaluate_hidden_rerun_masks.py`.
+
+Next, run a broader comparison over more wells and masks. Until that table exists, additional submissions are mostly blind. The next submitted notebook should be backed by a local pseudo-hidden rank table, not by another public-LB guess.
