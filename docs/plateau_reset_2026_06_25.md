@@ -63,7 +63,8 @@ The local validation target should become pseudo-hidden train wells with rerun-l
    - Train wells contain formation contact columns that almost exactly reconstruct TVT after a per-well offset.
    - Test wells do not contain those columns, so the submit-safe problem is now contact-surface imputation, not direct contact geometry.
    - KNN surface smoke reaches about 9.09 row RMSE on six leave-one-well-out wells; LightGBM surface extrapolation is worse at about 20.34.
-   - Submit at most one contact-surface probe to measure hidden LB signal, then continue only if it lands near or below the PF/artifact plateau.
+   - The standalone KNN contact-surface probe scored Public LB 19.601, so do not continue this as a direct replacement for PF/artifact.
+   - Contact geometry remains useful as a diagnostic clue, but only a much stronger surface reconstruction or a very constrained blend should revisit it.
 
 ## Immediate Action
 
