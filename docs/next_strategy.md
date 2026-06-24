@@ -1,5 +1,17 @@
 # Next Public LB Strategy
 
+## 2026-06-25 Plateau Reset
+
+The PF/artifact branch is no longer an open-ended tuning space. Versions 16/21
+remain the best at about 8.13, while TabICL CUDA v28 scored 8.211 and dynamic
+high-gap weighting v29 scored 8.266. Treat blend weights, public well IDs, and
+fixed-base probes as exhausted.
+
+This competition reruns notebooks with substituted hidden test data, so local
+public test well IDs are not the Public LB target. Future work should focus on
+hidden-rerun-style CV over train wells and learned path/meta-selection. See
+`docs/plateau_reset_2026_06_25.md`.
+
 The next phase is Public LB focused. That means test-well-specific analysis is allowed, but every move must be explicit about overfitting risk.
 
 ## Objective
