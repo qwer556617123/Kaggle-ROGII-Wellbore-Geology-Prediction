@@ -33,8 +33,10 @@ WELL_PF_WEIGHTS = {
 }
 ARTIFACT_EXACT_OVERLAP = os.getenv("ROGII_ARTIFACT_EXACT_OVERLAP", "0")
 ARTIFACT_EXACT_BLEND_WEIGHT = os.getenv("ROGII_ARTIFACT_EXACT_BLEND_WEIGHT", "")
-ARTIFACT_RUN_TABICL = os.getenv("ROGII_ARTIFACT_RUN_TABICL", "1")
-ARTIFACT_FORCE_CPU = os.getenv("ROGII_ARTIFACT_FORCE_CPU", "0")
+ARTIFACT_RUN_TABICL = os.getenv("ROGII_ARTIFACT_RUN_TABICL", "0")
+ARTIFACT_FORCE_CPU = os.getenv("ROGII_ARTIFACT_FORCE_CPU", "1")
+ARTIFACT_DYNAMIC_WELL_RULE = os.getenv("ROGII_ARTIFACT_DYNAMIC_WELL_RULE", "gap_high_more_artifact")
+ARTIFACT_DYNAMIC_PF_WEIGHT = float(os.getenv("ROGII_ARTIFACT_DYNAMIC_PF_WEIGHT", "0.75"))
 FINAL_WELL_OFFSETS = {
     str(k): float(v)
     for k, v in json.loads(os.getenv("ROGII_FINAL_WELL_OFFSETS", "{}")).items()
@@ -151,6 +153,58 @@ def apply_final_well_probe(
     return out[["id", "tvt"]], operations
 
 
+def dynamic_well_weights(
+    well_ids: pd.Series,
+    pf: pd.DataFrame,
+    artifact: pd.DataFrame,
+) -> tuple[np.ndarray, list[dict[str, object]], dict[str, dict[str, float]]]:
+    weights = well_ids.map(WELL_PF_WEIGHTS).fillna(PF_WEIGHT).to_numpy(float)
+    if not ARTIFACT_DYNAMIC_WELL_RULE:
+        return weights, [], {}
+
+    gap = pf["tvt"].to_numpy(float) - artifact["tvt"].to_numpy(float)
+    stats_frame = pd.DataFrame({
+        "well": well_ids.to_numpy(str),
+        "abs_gap": np.abs(gap),
+        "gap": gap,
+    })
+    well_stats = (
+        stats_frame
+        .groupby("well", sort=True)
+        .agg(
+            rows=("abs_gap", "size"),
+            mean_abs_gap=("abs_gap", "mean"),
+            mean_gap=("gap", "mean"),
+            max_abs_gap=("abs_gap", "max"),
+        )
+    )
+    stats_payload = {
+        str(idx): {str(k): float(v) for k, v in row.items()}
+        for idx, row in well_stats.iterrows()
+    }
+
+    operations: list[dict[str, object]] = []
+    if ARTIFACT_DYNAMIC_WELL_RULE == "gap_high_more_artifact":
+        selected = str(well_stats["mean_abs_gap"].idxmax())
+        target_weight = float(np.clip(ARTIFACT_DYNAMIC_PF_WEIGHT, 0.0, 1.0))
+        mask = well_ids.to_numpy(str) == selected
+        weights[mask] = target_weight
+        operations.append({
+            "rule": ARTIFACT_DYNAMIC_WELL_RULE,
+            "well": selected,
+            "pf_weight": target_weight,
+            "artifact_weight": 1.0 - target_weight,
+            "rows": int(mask.sum()),
+            "mean_abs_gap": float(well_stats.loc[selected, "mean_abs_gap"]),
+        })
+    elif ARTIFACT_DYNAMIC_WELL_RULE in {"0", "none", "off"}:
+        return weights, [], stats_payload
+    else:
+        raise ValueError(f"Unknown ROGII_ARTIFACT_DYNAMIC_WELL_RULE={ARTIFACT_DYNAMIC_WELL_RULE}")
+
+    return weights, operations, stats_payload
+
+
 def main() -> None:
     sample = pd.read_csv(find_sample())[["id"]]
     pf_script = write_component("pf_component.py", PF_COMPONENT_CODE)
@@ -188,7 +242,7 @@ def main() -> None:
     artifact = read_component(artifact_csv, sample, "artifact")
     submission = sample[["id"]].copy()
     well_ids = submission["id"].str.rsplit("_", n=1).str[0]
-    weights = well_ids.map(WELL_PF_WEIGHTS).fillna(PF_WEIGHT).to_numpy(float)
+    weights, dynamic_weight_ops, dynamic_well_stats = dynamic_well_weights(well_ids, pf, artifact)
     submission["tvt"] = weights * pf["tvt"].to_numpy(float) + (1.0 - weights) * artifact["tvt"].to_numpy(float)
     submission, final_probe_ops = apply_final_well_probe(
         submission,
@@ -208,6 +262,10 @@ def main() -> None:
         "artifact_exact_blend_weight": ARTIFACT_EXACT_BLEND_WEIGHT or "component_default",
         "artifact_run_tabicl": ARTIFACT_RUN_TABICL,
         "artifact_force_cpu": ARTIFACT_FORCE_CPU,
+        "artifact_dynamic_well_rule": ARTIFACT_DYNAMIC_WELL_RULE,
+        "artifact_dynamic_pf_weight": ARTIFACT_DYNAMIC_PF_WEIGHT,
+        "dynamic_weight_operations": dynamic_weight_ops,
+        "dynamic_well_stats": dynamic_well_stats,
         "final_well_offsets": FINAL_WELL_OFFSETS,
         "final_well_trends": FINAL_WELL_TRENDS,
         "final_probe_operations": final_probe_ops,
