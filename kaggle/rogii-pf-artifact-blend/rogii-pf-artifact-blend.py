@@ -24,7 +24,7 @@ V10_COMPONENT_CODE = '# %% cell 1\nfrom __future__ import annotations\n\nimport 
 WORKING = Path("/kaggle/working") if Path("/kaggle/working").exists() else Path.cwd()
 COMPONENT_ROOT = WORKING / "embedded_components"
 PF_VARIANT = os.getenv("ROGII_BLEND_PF_VARIANT", "grid_s3_b0_h0p17")
-PF_WEIGHT = float(os.getenv("ROGII_BLEND_PF_WEIGHT", "0.7925"))
+PF_WEIGHT = float(os.getenv("ROGII_BLEND_PF_WEIGHT", "0.80"))
 PF_WEIGHT = max(0.0, min(1.0, PF_WEIGHT))
 WELL_PF_WEIGHTS = {
     str(k): max(0.0, min(1.0, float(v)))
@@ -38,8 +38,8 @@ ARTIFACT_RUN_TABICL = os.getenv("ROGII_ARTIFACT_RUN_TABICL", "0")
 ARTIFACT_FORCE_CPU = os.getenv("ROGII_ARTIFACT_FORCE_CPU", "1")
 ARTIFACT_DYNAMIC_WELL_RULE = os.getenv("ROGII_ARTIFACT_DYNAMIC_WELL_RULE", "none")
 ARTIFACT_DYNAMIC_PF_WEIGHT = float(os.getenv("ROGII_ARTIFACT_DYNAMIC_PF_WEIGHT", "0.75"))
-CONTACT_SURFACE_WEIGHT = float(os.getenv("ROGII_CONTACT_SURFACE_WEIGHT", "0.0"))
-CONTACT_SURFACE_WEIGHT = max(0.0, min(1.0, CONTACT_SURFACE_WEIGHT))
+CONTACT_SURFACE_WEIGHT = float(os.getenv("ROGII_CONTACT_SURFACE_WEIGHT", "-0.03"))
+CONTACT_SURFACE_WEIGHT = max(-0.25, min(0.25, CONTACT_SURFACE_WEIGHT))
 CONTACT_SURFACE_COL = os.getenv("ROGII_CONTACT_SURFACE_COL", "EGFDL")
 CONTACT_SURFACE_K = int(os.getenv("ROGII_CONTACT_SURFACE_K", "64"))
 CONTACT_SURFACE_STRIDE = int(os.getenv("ROGII_CONTACT_SURFACE_STRIDE", "20"))
@@ -354,7 +354,7 @@ def main() -> None:
         FINAL_WELL_TRENDS,
     )
     contact_surface_summary: dict[str, object] = {}
-    if CONTACT_SURFACE_WEIGHT > 0:
+    if CONTACT_SURFACE_WEIGHT != 0:
         contact_surface, contact_surface_summary = contact_surface_component(data_dir, sample)
         submission["tvt"] = (
             (1.0 - CONTACT_SURFACE_WEIGHT) * submission["tvt"].to_numpy(float)
