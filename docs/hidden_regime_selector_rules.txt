@@ -1,0 +1,118 @@
+fold=1 heldout=33c40295
+|--- tail_gr_slope_md <= 0.28
+|   |--- eval_z_span <= 114.97
+|   |   |--- class: anchor
+|   |--- eval_z_span >  114.97
+|   |   |--- class: grid_s3_b0_h0p24
+|--- tail_gr_slope_md >  0.28
+|   |--- class: bin_lb_safe
+
+
+fold=2 heldout=3a223519
+|--- eval_z_span <= 120.92
+|   |--- tail_gr_slope_md <= 0.26
+|   |   |--- class: anchor
+|   |--- tail_gr_slope_md >  0.26
+|   |   |--- class: grid_s8_b0_h0p2
+|--- eval_z_span >  120.92
+|   |--- class: bin_lb_safe
+
+
+fold=3 heldout=3a824aa7
+|--- eval_z_span <= 120.92
+|   |--- tail_tvt_step_mean <= 0.01
+|   |   |--- class: anchor
+|   |--- tail_tvt_step_mean >  0.01
+|   |   |--- class: grid_s8_b0_h0p2
+|--- eval_z_span >  120.92
+|   |--- class: bin_lb_safe
+
+
+fold=4 heldout=46dfcfca
+|--- eval_z_span <= 120.92
+|   |--- meta_pf_path_std <= 0.55
+|   |   |--- class: grid_s8_b0_h0p2
+|   |--- meta_pf_path_std >  0.55
+|   |   |--- class: anchor
+|--- eval_z_span >  120.92
+|   |--- class: bin_lb_safe
+
+
+fold=5 heldout=4ddde4c1
+|--- eval_z_span <= 120.92
+|   |--- meta_pf_path_std <= 0.55
+|   |   |--- class: grid_s8_b0_h0p2
+|   |--- meta_pf_path_std >  0.55
+|   |   |--- class: anchor
+|--- eval_z_span >  120.92
+|   |--- class: bin_lb_safe
+
+
+fold=6 heldout=504c8b08
+|--- eval_z_span <= 120.92
+|   |--- eval_gr_nan <= 0.08
+|   |   |--- class: grid_s8_b0_h0p2
+|   |--- eval_gr_nan >  0.08
+|   |   |--- class: anchor
+|--- eval_z_span >  120.92
+|   |--- class: bin_lb_safe
+
+
+fold=7 heldout=5fffa282
+|--- eval_z_span <= 120.92
+|   |--- meta_pf_entropy <= 0.95
+|   |   |--- class: grid_s3_b0_h0p17
+|   |--- meta_pf_entropy >  0.95
+|   |   |--- class: anchor
+|--- eval_z_span >  120.92
+|   |--- class: bin_lb_safe
+
+
+fold=8 heldout=699ea575
+|--- eval_z_span <= 120.92
+|   |--- eval_gr_nan <= 0.08
+|   |   |--- class: grid_s8_b0_h0p2
+|   |--- eval_gr_nan >  0.08
+|   |   |--- class: anchor
+|--- eval_z_span >  120.92
+|   |--- class: bin_lb_safe
+
+
+fold=9 heldout=c9e980e8
+|--- eval_z_span <= 119.53
+|   |--- eval_gr_nan <= 0.08
+|   |   |--- class: grid_s8_b0_h0p2
+|   |--- eval_gr_nan >  0.08
+|   |   |--- class: anchor
+|--- eval_z_span >  119.53
+|   |--- class: bin_lb_safe
+
+
+fold=10 heldout=cda7eb37
+|--- tail_tvt_slope_md <= 0.01
+|   |--- eval_z_span <= 114.97
+|   |   |--- class: anchor
+|   |--- eval_z_span >  114.97
+|   |   |--- class: grid_s3_b0_h0p24
+|--- tail_tvt_slope_md >  0.01
+|   |--- class: grid_s8_b0_h0p2
+
+
+fold=11 heldout=d6dd7330
+|--- eval_z_span <= 120.92
+|   |--- eval_gr_nan <= 0.08
+|   |   |--- class: grid_s8_b0_h0p2
+|   |--- eval_gr_nan >  0.08
+|   |   |--- class: anchor
+|--- eval_z_span >  120.92
+|   |--- class: bin_lb_safe
+
+
+fold=12 heldout=ed6e6e54
+|--- tail_gr_slope_md <= 0.28
+|   |--- tail_tvt_step_mean <= -0.01
+|   |   |--- class: anchor
+|   |--- tail_tvt_step_mean >  -0.01
+|   |   |--- class: grid_s3_b0_h0p17
+|--- tail_gr_slope_md >  0.28
+|   |--- class: bin_lb_safe

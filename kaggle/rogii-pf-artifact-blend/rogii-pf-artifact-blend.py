@@ -38,7 +38,8 @@ ARTIFACT_RUN_TABICL = os.getenv("ROGII_ARTIFACT_RUN_TABICL", "0")
 ARTIFACT_FORCE_CPU = os.getenv("ROGII_ARTIFACT_FORCE_CPU", "1")
 ARTIFACT_DYNAMIC_WELL_RULE = os.getenv("ROGII_ARTIFACT_DYNAMIC_WELL_RULE", "none")
 ARTIFACT_DYNAMIC_PF_WEIGHT = float(os.getenv("ROGII_ARTIFACT_DYNAMIC_PF_WEIGHT", "0.75"))
-CONTACT_SURFACE_WEIGHT = float(os.getenv("ROGII_CONTACT_SURFACE_WEIGHT", "-0.03"))
+BLEND_SELECTOR = os.getenv("ROGII_BLEND_SELECTOR", "off").strip().lower()
+CONTACT_SURFACE_WEIGHT = float(os.getenv("ROGII_CONTACT_SURFACE_WEIGHT", "0"))
 CONTACT_SURFACE_WEIGHT = max(-0.25, min(0.25, CONTACT_SURFACE_WEIGHT))
 CONTACT_SURFACE_COL = os.getenv("ROGII_CONTACT_SURFACE_COL", "EGFDL")
 CONTACT_SURFACE_K = int(os.getenv("ROGII_CONTACT_SURFACE_K", "64"))
@@ -307,6 +308,143 @@ def dynamic_well_weights(
     return weights, operations, stats_payload
 
 
+def finite_slope(x: np.ndarray, y: np.ndarray) -> float:
+    mask = np.isfinite(x) & np.isfinite(y)
+    if int(mask.sum()) < 3:
+        return 0.0
+    xv = x[mask].astype(float)
+    yv = y[mask].astype(float)
+    denom = float(np.var(xv))
+    if denom <= 1e-9:
+        return 0.0
+    return float(np.cov(xv, yv, bias=True)[0, 1] / denom)
+
+
+def prefix_feature_payload(hw: pd.DataFrame, gap_stats: dict[str, float]) -> dict[str, float]:
+    eval_mask = hw["TVT_input"].isna().to_numpy()
+    known_mask = hw["TVT_input"].notna().to_numpy()
+    known = hw.loc[known_mask].copy()
+    eval_rows = hw.loc[eval_mask].copy()
+    tail = known.tail(min(80, max(12, len(known) // 3)))
+
+    gr_tail = tail["GR"].interpolate(limit_direction="both").to_numpy(dtype=float)
+    tvt_tail = tail["TVT_input"].to_numpy(dtype=float)
+    md_tail = tail["MD"].to_numpy(dtype=float)
+    z_tail = tail["Z"].to_numpy(dtype=float)
+    gr_known = known["GR"].interpolate(limit_direction="both").to_numpy(dtype=float)
+
+    out = {
+        "n": float(len(hw)),
+        "n_known": float(known_mask.sum()),
+        "n_eval": float(eval_mask.sum()),
+        "known_frac": float(known_mask.mean()) if len(hw) else 0.0,
+        "eval_z_span": float(eval_rows["Z"].max() - eval_rows["Z"].min()) if len(eval_rows) else 0.0,
+        "eval_md_span": float(eval_rows["MD"].max() - eval_rows["MD"].min()) if len(eval_rows) else 0.0,
+        "eval_gr_nan": float(eval_rows["GR"].isna().mean()) if len(eval_rows) else 0.0,
+        "prefix_gr_std": float(np.nanstd(gr_known)) if len(gr_known) else 0.0,
+        "tail_gr_std": float(np.nanstd(gr_tail)) if len(gr_tail) else 0.0,
+        "tail_gr_slope_md": finite_slope(md_tail, gr_tail),
+        "tail_tvt_slope_md": finite_slope(md_tail, tvt_tail),
+        "tail_z_slope_md": finite_slope(md_tail, z_tail),
+    }
+    out.update({f"component_{k}": float(v) for k, v in gap_stats.items()})
+    return out
+
+
+def prefix_regime_weight(features: dict[str, float]) -> tuple[str, float, float]:
+    """CPU-safe handoff rule for hidden-rerun wells.
+
+    The selector is intentionally conservative: it only moves away from the
+    v16 80/20 baseline when prefix risk or PF/artifact disagreement is large.
+    """
+    mean_abs_gap = features.get("component_mean_abs_gap", 0.0)
+    mean_gap = features.get("component_mean_gap", 0.0)
+    tail_gr_std = features.get("tail_gr_std", 0.0)
+    eval_z_span = features.get("eval_z_span", 0.0)
+    known_frac = features.get("known_frac", 1.0)
+    eval_gr_nan = features.get("eval_gr_nan", 0.0)
+    tail_tvt_slope = abs(features.get("tail_tvt_slope_md", 0.0))
+
+    if known_frac < 0.40 or eval_gr_nan > 0.35:
+        return "anchor_like_low_support", 0.90, 0.60
+    if tail_gr_std >= 36.0 or eval_z_span >= 190.0 or tail_tvt_slope >= 0.045:
+        return "conservative_prefix_risk", 0.85, 0.65
+    if mean_abs_gap >= 11.0 and tail_gr_std <= 28.0 and eval_gr_nan <= 0.10 and mean_gap > 0.0:
+        return "artifact_heavy_clean_gap", 0.75, 0.70
+    if mean_abs_gap >= 16.0:
+        return "conservative_large_gap", 0.85, 0.55
+    return "pf_heavy_baseline", 0.80, 0.80
+
+
+def apply_prefix_selector(
+    data_dir: Path,
+    well_ids_series: pd.Series,
+    pf: pd.DataFrame,
+    artifact: pd.DataFrame,
+    initial_weights: np.ndarray,
+) -> tuple[np.ndarray, list[dict[str, object]], dict[str, dict[str, float]]]:
+    if BLEND_SELECTOR in {"", "0", "off", "none"}:
+        return initial_weights, [], {}
+    if BLEND_SELECTOR != "prefix_regime_v1":
+        raise ValueError(f"Unknown ROGII_BLEND_SELECTOR={BLEND_SELECTOR}")
+
+    gap = pf["tvt"].to_numpy(float) - artifact["tvt"].to_numpy(float)
+    gap_frame = pd.DataFrame({
+        "well": well_ids_series.to_numpy(str),
+        "abs_gap": np.abs(gap),
+        "gap": gap,
+    })
+    gap_by_well = (
+        gap_frame
+        .groupby("well", sort=True)
+        .agg(
+            rows=("abs_gap", "size"),
+            mean_abs_gap=("abs_gap", "mean"),
+            mean_gap=("gap", "mean"),
+            max_abs_gap=("abs_gap", "max"),
+        )
+    )
+
+    weights = initial_weights.copy()
+    operations: list[dict[str, object]] = []
+    feature_payload: dict[str, dict[str, float]] = {}
+    wells = sorted(gap_by_well.index.astype(str).tolist())
+    for wid in wells:
+        hw_path = data_dir / "test" / f"{wid}__horizontal_well.csv"
+        if not hw_path.exists():
+            continue
+        hw = pd.read_csv(hw_path)
+        gap_stats = {str(k): float(v) for k, v in gap_by_well.loc[wid].items()}
+        features = prefix_feature_payload(hw, gap_stats)
+        regime, pf_weight, confidence = prefix_regime_weight(features)
+        mask = well_ids_series.to_numpy(str) == wid
+        weights[mask] = pf_weight
+        feature_payload[wid] = features
+        operations.append({
+            "well": wid,
+            "rule": BLEND_SELECTOR,
+            "regime": regime,
+            "pf_weight": float(pf_weight),
+            "artifact_weight": float(1.0 - pf_weight),
+            "confidence": float(confidence),
+            "rows": int(mask.sum()),
+        })
+
+    # Explicit per-well overrides are treated as manual audit controls.
+    for wid, pf_weight in WELL_PF_WEIGHTS.items():
+        mask = well_ids_series.to_numpy(str) == wid
+        if mask.any():
+            weights[mask] = pf_weight
+            operations.append({
+                "well": wid,
+                "rule": "manual_override",
+                "pf_weight": float(pf_weight),
+                "artifact_weight": float(1.0 - pf_weight),
+                "rows": int(mask.sum()),
+            })
+    return weights, operations, feature_payload
+
+
 def main() -> None:
     sample_path = find_sample()
     data_dir = sample_path.parent
@@ -347,6 +485,7 @@ def main() -> None:
     submission = sample[["id"]].copy()
     well_ids = submission["id"].str.rsplit("_", n=1).str[0]
     weights, dynamic_weight_ops, dynamic_well_stats = dynamic_well_weights(well_ids, pf, artifact)
+    weights, selector_ops, selector_features = apply_prefix_selector(data_dir, well_ids, pf, artifact, weights)
     submission["tvt"] = weights * pf["tvt"].to_numpy(float) + (1.0 - weights) * artifact["tvt"].to_numpy(float)
     submission, final_probe_ops = apply_final_well_probe(
         submission,
@@ -375,6 +514,9 @@ def main() -> None:
         "artifact_force_cpu": ARTIFACT_FORCE_CPU,
         "artifact_dynamic_well_rule": ARTIFACT_DYNAMIC_WELL_RULE,
         "artifact_dynamic_pf_weight": ARTIFACT_DYNAMIC_PF_WEIGHT,
+        "blend_selector": BLEND_SELECTOR,
+        "selector_operations": selector_ops,
+        "selector_features": selector_features,
         "contact_surface_weight": CONTACT_SURFACE_WEIGHT,
         "contact_surface_summary": contact_surface_summary,
         "dynamic_weight_operations": dynamic_weight_ops,

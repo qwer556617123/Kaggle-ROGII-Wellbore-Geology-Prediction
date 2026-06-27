@@ -80,6 +80,14 @@ The current best public clue is PF/physical modeling rather than another global 
      PF-heavy, artifact-heavy, or conservative/anchor-like behavior from
      prefix-only diagnostics. Scalar PF/artifact weights are no longer a valid
      experiment class.
+   - The first local selector harness is implemented, but the smoke tests
+     rejected PF-only selection: fixed h0.17 scored 5.037 well RMSE, while the
+     OOF selector scored 5.108 without anchor and 6.853 with anchor. Keep
+     `ROGII_BLEND_SELECTOR=off` until artifact OOF is available.
+   - Next implementation target: create pseudo-hidden artifact predictions for
+     masked train wells, then validate per-well 80/20 vs 75/25 vs selector
+     weights against true hidden tails. This is the first selector test that
+     actually matches the Public LB blend mechanism.
 6. Reconstruct v13 predictions for all three test wells and save a compact per-well trend table:
    - start TVT, end TVT, net change, min, max, standard deviation;
    - correction mean/std/range;

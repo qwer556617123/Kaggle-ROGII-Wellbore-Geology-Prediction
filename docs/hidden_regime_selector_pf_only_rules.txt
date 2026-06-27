@@ -1,0 +1,130 @@
+fold=1 heldout=33c40295
+|--- tail_gr_slope_md <= 0.25
+|   |--- tail_gr_std <= 4.06
+|   |   |--- class: grid_s3_b0_h0p24
+|   |--- tail_gr_std >  4.06
+|   |   |--- class: grid_s3_b0_h0p17
+|--- tail_gr_slope_md >  0.25
+|   |--- n <= 6402.00
+|   |   |--- class: grid_s8_b0_h0p2
+|   |--- n >  6402.00
+|   |   |--- class: bin_lb_safe
+
+
+fold=2 heldout=3a223519
+|--- tail_gr_slope_md <= 0.25
+|   |--- eval_gr_nan <= 0.10
+|   |   |--- class: grid_s3_b0_h0p24
+|   |--- eval_gr_nan >  0.10
+|   |   |--- class: grid_s3_b0_h0p17
+|--- tail_gr_slope_md >  0.25
+|   |--- class: bin_lb_safe
+
+
+fold=3 heldout=3a824aa7
+|--- tail_gr_slope_md <= 0.21
+|   |--- known_frac <= 0.75
+|   |   |--- class: grid_s3_b0_h0p17
+|   |--- known_frac >  0.75
+|   |   |--- class: grid_s3_b0_h0p24
+|--- tail_gr_slope_md >  0.21
+|   |--- tail_tvt_step_mean <= -0.01
+|   |   |--- class: bin_lb_safe
+|   |--- tail_tvt_step_mean >  -0.01
+|   |   |--- class: grid_s8_b0_h0p2
+
+
+fold=4 heldout=46dfcfca
+|--- tail_gr_slope_md <= 0.28
+|   |--- known_frac <= 0.75
+|   |   |--- class: grid_s3_b0_h0p17
+|   |--- known_frac >  0.75
+|   |   |--- class: grid_s3_b0_h0p24
+|--- tail_gr_slope_md >  0.28
+|   |--- class: bin_lb_safe
+
+
+fold=5 heldout=4ddde4c1
+|--- tail_gr_slope_md <= 0.25
+|   |--- prefix_gr_std <= 17.41
+|   |   |--- class: grid_s3_b0_h0p24
+|   |--- prefix_gr_std >  17.41
+|   |   |--- class: grid_s3_b0_h0p17
+|--- tail_gr_slope_md >  0.25
+|   |--- n <= 6402.00
+|   |   |--- class: grid_s8_b0_h0p2
+|   |--- n >  6402.00
+|   |   |--- class: bin_lb_safe
+
+
+fold=6 heldout=504c8b08
+|--- tail_gr_slope_md <= 0.25
+|   |--- known_frac <= 0.75
+|   |   |--- class: grid_s3_b0_h0p17
+|   |--- known_frac >  0.75
+|   |   |--- class: grid_s3_b0_h0p24
+|--- tail_gr_slope_md >  0.25
+|   |--- class: bin_lb_safe
+
+
+fold=7 heldout=5fffa282
+|--- eval_z_span <= 46.13
+|   |--- class: grid_s8_b0_h0p2
+|--- eval_z_span >  46.13
+|   |--- tail_gr_slope_md <= 0.26
+|   |   |--- class: grid_s3_b0_h0p24
+|   |--- tail_gr_slope_md >  0.26
+|   |   |--- class: bin_lb_safe
+
+
+fold=8 heldout=699ea575
+|--- tail_gr_slope_md <= 0.25
+|   |--- known_frac <= 0.75
+|   |   |--- class: grid_s3_b0_h0p17
+|   |--- known_frac >  0.75
+|   |   |--- class: grid_s3_b0_h0p24
+|--- tail_gr_slope_md >  0.25
+|   |--- tail_tvt_step_mean <= -0.01
+|   |   |--- class: bin_lb_safe
+|   |--- tail_tvt_step_mean >  -0.01
+|   |   |--- class: grid_s8_b0_h0p2
+
+
+fold=9 heldout=c9e980e8
+|--- meta_pf_entropy <= 0.95
+|   |--- class: bin_lb_safe
+|--- meta_pf_entropy >  0.95
+|   |--- tail_tvt_step_std <= 0.01
+|   |   |--- class: grid_s3_b0_h0p24
+|   |--- tail_tvt_step_std >  0.01
+|   |   |--- class: grid_s8_b0_h0p2
+
+
+fold=10 heldout=cda7eb37
+|--- tail_gr_slope_md <= 0.25
+|   |--- known_frac <= 0.75
+|   |   |--- class: grid_s3_b0_h0p17
+|   |--- known_frac >  0.75
+|   |   |--- class: grid_s3_b0_h0p24
+|--- tail_gr_slope_md >  0.25
+|   |--- class: grid_s8_b0_h0p2
+
+
+fold=11 heldout=d6dd7330
+|--- tail_gr_slope_md <= 0.25
+|   |--- eval_gr_nan <= 0.11
+|   |   |--- class: grid_s3_b0_h0p24
+|   |--- eval_gr_nan >  0.11
+|   |   |--- class: grid_s3_b0_h0p17
+|--- tail_gr_slope_md >  0.25
+|   |--- class: bin_lb_safe
+
+
+fold=12 heldout=ed6e6e54
+|--- eval_z_span <= 119.53
+|   |--- tail_gr_slope_md <= 0.25
+|   |   |--- class: grid_s3_b0_h0p24
+|   |--- tail_gr_slope_md >  0.25
+|   |   |--- class: grid_s8_b0_h0p2
+|--- eval_z_span >  119.53
+|   |--- class: bin_lb_safe
