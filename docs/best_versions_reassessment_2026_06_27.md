@@ -4,8 +4,8 @@
 
 | Version | Public LB | Core setting | Decision |
 | --- | ---: | --- | --- |
-| v16 | 8.130 | PF h0.17 + no-exact artifact, 80/20 | Best known |
-| v21 | 8.131 | PF h0.17 + no-exact artifact, 75/25 | Statistical near-tie |
+| v16 | 8.130 | PF h0.17 + artifact, 80/20; wrapper reported no-exact but component behavior may follow saved config | Best known |
+| v21 | 8.131 | PF h0.17 + artifact, 75/25; same exact-overlap caveat | Statistical near-tie |
 | v31 | 8.153 | 85% v16 + 15% v21, equivalent 79.25/20.75 | Worse than both |
 | v30 | 8.160 | v16 + 3% contact surface | Worse |
 | v32 | 8.408 | v16 - 3% contact surface residual | Strong reject |
@@ -22,7 +22,9 @@ The better interpretation is:
 
 - PF h0.17 is a strong shape prior.
 - The artifact model carries a useful but dangerous correction.
-- Exact train-coordinate overlap is harmful and should remain off.
+- True no-exact artifact is harmful on Public LB; the old "no-exact" label is
+  ambiguous because the artifact component could re-enable saved config
+  behavior internally.
 - Hidden wells likely split into different regimes: some prefer PF-heavy, some
   prefer more artifact, and scalar averaging blurs that split.
 
@@ -30,7 +32,8 @@ The better interpretation is:
 
 Do not spend more submissions on:
 
-- PF/artifact scalar weights between 75/25 and 85/15;
+- PF/artifact scalar weights between 75/25 and 85/15 on the existing component;
+- true no-exact artifact weighting, now rejected by v33/v34;
 - same-family weighted ensembles of v16/v21/v30/v31;
 - contact surface positive or negative residuals;
 - TabICL full reruns without a targeted ablation;
