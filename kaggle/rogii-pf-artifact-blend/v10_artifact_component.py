@@ -22,7 +22,13 @@ from scipy.interpolate import interp1d
 from scipy.signal import savgol_filter
 from scipy.spatial import cKDTree
 from sklearn.linear_model import Ridge
-from sklearn.metrics import root_mean_squared_error
+try:
+    from sklearn.metrics import root_mean_squared_error
+except ImportError:
+    from sklearn.metrics import mean_squared_error
+
+    def root_mean_squared_error(y_true, y_pred):
+        return mean_squared_error(y_true, y_pred, squared=False)
 from sklearn.model_selection import GroupKFold
 
 warnings.filterwarnings("ignore")
@@ -2002,11 +2008,13 @@ if INFERENCE_ONLY:
         flush=True,
     )
 
-    if config.get("exact_overlap_enabled", True):
-        os.environ["ROGII_EXACT_OVERLAP"] = "1"
-        os.environ["ROGII_EXACT_BLEND_WEIGHT"] = str(config.get("exact_blend_weight", 0.28))
-    else:
-        os.environ["ROGII_EXACT_OVERLAP"] = "0"
+    exact_env = os.environ.get("ROGII_EXACT_OVERLAP")
+    if exact_env is None:
+        if config.get("exact_overlap_enabled", True):
+            os.environ["ROGII_EXACT_OVERLAP"] = "1"
+            os.environ["ROGII_EXACT_BLEND_WEIGHT"] = str(config.get("exact_blend_weight", 0.28))
+        else:
+            os.environ["ROGII_EXACT_OVERLAP"] = "0"
     sub = apply_exact_train_coordinate_blend(sub[["id", "tvt"]], DATA)
     sub[["id", "tvt"]].to_csv(OUT, index=False)
     print(f"\n✅  {OUT}  {len(sub)} rows (artifact inference)")

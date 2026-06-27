@@ -76,11 +76,13 @@ These experiments are inspired by the public physical/PF notebooks. Local CV use
 | `pf_artifact_blend_v32` | Best no-exact PF/artifact 80/20 plus anti-contact residual: `1.03 * baseline - 0.03 * contact_surface` | Since +3% contact worsened LB, test whether the contact-surface error direction is anti-correlated with the hidden residual | wrapper compile and contact component smoke only | 8.408, ref 54085426 | Strong reject; retire contact surface entirely, including negative residual probes |
 | `hidden_regime_selector_smoke` | Pseudo-hidden prefix selector over PF variants plus anchor | Test whether train-mask prefix diagnostics can choose PF-heavy / conservative / anchor-like regimes | fixed h0.17 well RMSE 5.037; OOF selector 6.853 | not submitted | Reject; anchor choices do not generalize out of fold |
 | `hidden_regime_selector_pf_only` | Pseudo-hidden prefix selector over PF-family variants only | Remove anchor failure mode and test if shallow prefix rules beat fixed h0.17 | fixed h0.17 well RMSE 5.037; OOF selector 5.108 | not submitted | Reject; selector is worse than fixed h0.17, so do not enable `prefix_regime_v1` by default |
+| `artifact_hidden_mask_cv` | Pseudo-hidden PF/artifact CV with v10 artifact inference and exact overlap truly disabled | Validate the actual blend mechanism locally instead of PF-only selector guesses | combined 12-well x 3-frac mask-well mean: 70/30 = 4.741, 75/25 = 4.760, 80/20 = 4.790, PF-only = 5.037 | pending submission | Submit true no-exact 70/30 and 75/25 as the next two notebook versions |
 
 Top selector-grid rows are recorded in `docs/pf_selector_grid_summary.csv`; per-well detail is in `docs/pf_selector_grid_details.csv`.
 The larger 100-well selector comparison is recorded in `docs/pf_bin_selector_cv_summary.csv` and `docs/pf_bin_selector_cv_details.csv`.
 The fast runtime check is recorded in `docs/pf_fast_selector_cv_summary.csv` and `docs/pf_fast_selector_cv_details.csv`.
 The hidden regime selector checks are recorded in `docs/hidden_regime_selector_findings.md` and `docs/hidden_regime_selector_*`.
+The artifact hidden-mask checks are recorded in `docs/artifact_hidden_mask_cv_findings.md` and `docs/artifact_hidden_mask_cv*_summary.csv`.
 The fast hold sweep is recorded in `docs/pf_fast_hold_sweep_summary.csv` and `docs/pf_fast_hold_sweep_details.csv`.
 The rejected residual correction check is recorded in `docs/pf_residual_summary.csv`.
 The hidden-rerun contact checks are recorded in `docs/hidden_rerun_contact_cv_summary.csv`, `docs/contact_safe_native_mask_summary.csv`, and `docs/spatial_contact_surface_*summary.csv`.
