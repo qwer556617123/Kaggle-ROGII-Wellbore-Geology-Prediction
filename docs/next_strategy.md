@@ -88,6 +88,14 @@ The current best public clue is PF/physical modeling rather than another global 
      masked train wells, then validate per-well 80/20 vs 75/25 vs selector
      weights against true hidden tails. This is the first selector test that
      actually matches the Public LB blend mechanism.
+   - The artifact hidden-mask harness was built and suggested true no-exact
+     70/30 or 75/25, but Kaggle rejected both: v33 scored 8.391 and v34 scored
+     8.328. Treat that harness as a diagnostic only, not a submit gate. Restore
+     the practical v16-like baseline: 80/20 with the artifact component's saved
+     config controlling exact-coordinate behavior.
+   - New interpretation: prior "no-exact" labels were partly misleading because
+     the wrapper-level env could be overridden inside the artifact component
+     before the 2026-06-27 fix. True no-exact is now empirically worse.
 6. Reconstruct v13 predictions for all three test wells and save a compact per-well trend table:
    - start TVT, end TVT, net change, min, max, standard deviation;
    - correction mean/std/range;
