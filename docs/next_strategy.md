@@ -7,6 +7,12 @@ remain the best at about 8.13, while TabICL CUDA v28 scored 8.211 and dynamic
 high-gap weighting v29 scored 8.266. Treat blend weights, public well IDs, and
 fixed-base probes as exhausted.
 
+Update 2026-06-27: the v30/v31/v32 probes confirmed the plateau. A small
+positive contact-surface blend scored 8.160, the conservative v16/v21 ensemble
+scored 8.153, and the negative contact-surface residual scored 8.408. Do not
+continue same-family blending or contact-surface residuals. Reassess from
+`docs/best_versions_reassessment_2026_06_27.md`.
+
 This competition reruns notebooks with substituted hidden test data, so local
 public test well IDs are not the Public LB target. Future work should focus on
 hidden-rerun-style CV over train wells and learned path/meta-selection. See
@@ -70,6 +76,10 @@ The current best public clue is PF/physical modeling rather than another global 
    - Contact geometry diagnostic reset: actual train formation contact columns plus a known-segment offset reconstruct TVT almost exactly (`~0.006 ft` local RMSE), but hidden/test files do not expose those columns. The practical task is therefore reconstructing missing contact surfaces from train X/Y before applying the offset formula.
    - First contact-surface results: KNN surface imputation is usable but not yet best (`EGFDL_k64_tail_mean` smoke row RMSE `9.087`); LightGBM surface extrapolation is rejected (`20.336`). Submit one KNN surface probe only to measure hidden LB signal, not as a claimed best model.
 5. Avoid another small submission unless it tests one of the larger changes above.
+   - Current larger change: build a rerun-safe regime selector that chooses
+     PF-heavy, artifact-heavy, or conservative/anchor-like behavior from
+     prefix-only diagnostics. Scalar PF/artifact weights are no longer a valid
+     experiment class.
 6. Reconstruct v13 predictions for all three test wells and save a compact per-well trend table:
    - start TVT, end TVT, net change, min, max, standard deviation;
    - correction mean/std/range;
