@@ -45,6 +45,8 @@ CONTACT_SURFACE_COL = os.getenv("ROGII_CONTACT_SURFACE_COL", "EGFDL")
 CONTACT_SURFACE_K = int(os.getenv("ROGII_CONTACT_SURFACE_K", "64"))
 CONTACT_SURFACE_STRIDE = int(os.getenv("ROGII_CONTACT_SURFACE_STRIDE", "20"))
 CONTACT_SURFACE_XY_SCALE = float(os.getenv("ROGII_CONTACT_SURFACE_XY_SCALE", "1000.0"))
+FINAL_DYNAMIC_OFFSET_RULE = os.getenv("ROGII_FINAL_DYNAMIC_OFFSET_RULE", "off").strip().lower()
+FINAL_DYNAMIC_OFFSET_VALUE = float(os.getenv("ROGII_FINAL_DYNAMIC_OFFSET_VALUE", "0"))
 FINAL_WELL_OFFSETS = {
     str(k): float(v)
     for k, v in json.loads(os.getenv("ROGII_FINAL_WELL_OFFSETS", "{}")).items()
@@ -256,15 +258,11 @@ def apply_final_well_probe(
     return out[["id", "tvt"]], operations
 
 
-def dynamic_well_weights(
+def component_gap_stats(
     well_ids: pd.Series,
     pf: pd.DataFrame,
     artifact: pd.DataFrame,
-) -> tuple[np.ndarray, list[dict[str, object]], dict[str, dict[str, float]]]:
-    weights = well_ids.map(WELL_PF_WEIGHTS).fillna(PF_WEIGHT).to_numpy(float)
-    if not ARTIFACT_DYNAMIC_WELL_RULE:
-        return weights, [], {}
-
+) -> tuple[pd.DataFrame, dict[str, dict[str, float]]]:
     gap = pf["tvt"].to_numpy(float) - artifact["tvt"].to_numpy(float)
     stats_frame = pd.DataFrame({
         "well": well_ids.to_numpy(str),
@@ -285,7 +283,53 @@ def dynamic_well_weights(
         str(idx): {str(k): float(v) for k, v in row.items()}
         for idx, row in well_stats.iterrows()
     }
+    return well_stats, stats_payload
 
+
+def apply_dynamic_final_offset(
+    submission: pd.DataFrame,
+    well_ids: pd.Series,
+    well_stats: pd.DataFrame,
+    rule: str,
+    value: float,
+) -> tuple[pd.DataFrame, list[dict[str, object]]]:
+    if rule in {"", "0", "off", "none"} or value == 0:
+        return submission, []
+    if rule != "max_component_gap":
+        raise ValueError(f"Unknown ROGII_FINAL_DYNAMIC_OFFSET_RULE={rule}")
+    if well_stats.empty:
+        raise ValueError("Cannot apply dynamic final offset without component gap stats")
+
+    selected = str(well_stats["mean_abs_gap"].idxmax())
+    mask = well_ids.to_numpy(str) == selected
+    if not mask.any():
+        raise ValueError(f"Dynamic offset selected well not found in submission: {selected}")
+
+    out = submission.copy()
+    out.loc[mask, "tvt"] = out.loc[mask, "tvt"].astype(float) + float(value)
+    row = well_stats.loc[selected]
+    return out, [{
+        "rule": rule,
+        "well": selected,
+        "kind": "dynamic_offset",
+        "value": float(value),
+        "rows": int(mask.sum()),
+        "mean_abs_gap": float(row["mean_abs_gap"]),
+        "mean_gap": float(row["mean_gap"]),
+        "max_abs_gap": float(row["max_abs_gap"]),
+    }]
+
+
+def dynamic_well_weights(
+    well_ids: pd.Series,
+    pf: pd.DataFrame,
+    artifact: pd.DataFrame,
+) -> tuple[np.ndarray, list[dict[str, object]], dict[str, dict[str, float]]]:
+    weights = well_ids.map(WELL_PF_WEIGHTS).fillna(PF_WEIGHT).to_numpy(float)
+    if not ARTIFACT_DYNAMIC_WELL_RULE:
+        return weights, [], {}
+
+    well_stats, stats_payload = component_gap_stats(well_ids, pf, artifact)
     operations: list[dict[str, object]] = []
     if ARTIFACT_DYNAMIC_WELL_RULE == "gap_high_more_artifact":
         selected = str(well_stats["mean_abs_gap"].idxmax())
@@ -484,6 +528,7 @@ def main() -> None:
     artifact = read_component(artifact_csv, sample, "artifact")
     submission = sample[["id"]].copy()
     well_ids = submission["id"].str.rsplit("_", n=1).str[0]
+    gap_by_well, component_gap_payload = component_gap_stats(well_ids, pf, artifact)
     weights, dynamic_weight_ops, dynamic_well_stats = dynamic_well_weights(well_ids, pf, artifact)
     weights, selector_ops, selector_features = apply_prefix_selector(data_dir, well_ids, pf, artifact, weights)
     submission["tvt"] = weights * pf["tvt"].to_numpy(float) + (1.0 - weights) * artifact["tvt"].to_numpy(float)
@@ -491,6 +536,13 @@ def main() -> None:
         submission,
         FINAL_WELL_OFFSETS,
         FINAL_WELL_TRENDS,
+    )
+    submission, dynamic_offset_ops = apply_dynamic_final_offset(
+        submission,
+        well_ids,
+        gap_by_well,
+        FINAL_DYNAMIC_OFFSET_RULE,
+        FINAL_DYNAMIC_OFFSET_VALUE,
     )
     contact_surface_summary: dict[str, object] = {}
     if CONTACT_SURFACE_WEIGHT != 0:
@@ -521,8 +573,12 @@ def main() -> None:
         "contact_surface_summary": contact_surface_summary,
         "dynamic_weight_operations": dynamic_weight_ops,
         "dynamic_well_stats": dynamic_well_stats,
+        "component_gap_stats": component_gap_payload,
         "final_well_offsets": FINAL_WELL_OFFSETS,
         "final_well_trends": FINAL_WELL_TRENDS,
+        "final_dynamic_offset_rule": FINAL_DYNAMIC_OFFSET_RULE,
+        "final_dynamic_offset_value": FINAL_DYNAMIC_OFFSET_VALUE,
+        "final_dynamic_offset_operations": dynamic_offset_ops,
         "final_probe_operations": final_probe_ops,
         "rows": int(len(submission)),
         "submission_sha256": sha256_file(out_path),
