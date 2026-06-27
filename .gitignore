@@ -24,6 +24,7 @@ kernel_output*/
 # Local Kaggle reference pulls and smoke diagnostics
 kaggle/public/
 docs/*_smoke.csv
+docs/*_details*.csv
 docs/pf_residual_rows*.csv
 kaggle/artifact_probe*/
 kaggle/artifact_blend_output*/
