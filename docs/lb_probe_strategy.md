@@ -38,10 +38,29 @@ score gap is only `0.011`, below the `0.02` signal gate. Both probes are also
 well worse than the 8.13 baseline. Do not submit a calibrated offset from this
 pair.
 
-Next probe should move to a different low-dimensional basis, such as a
-rerun-safe smooth trend basis on the max-gap well or another prefix-selected
-well family. Avoid more constant-offset probes on the same max-gap basis unless
-a new diagnostic explains why this pair was too blunt.
+## Reassessment After v35/v36
+
+The important result is not the tiny preference for `-10`; it is that a blunt
+constant offset on the max-gap well is the wrong basis. The symmetric projection
+estimate is only about `0.0045`, while the average squared-score penalty versus
+the 8.130 baseline is about `1.83`. In plain terms, this probe mostly added
+variance and only found a weak direction.
+
+This pair also exposes an audit gap: v35/v36 used the current wrapper default
+with artifact `component_default`, while the historical v16/v21 labels have
+known exact-overlap ambiguity. Before spending more residual probes, run one
+no-offset audit version from the current wrapper and compare it against 8.13.
+
+Decision tree:
+
+1. If the no-offset audit returns near 8.13, then v35/v36 reject only the
+   constant-offset basis. Move to a zero-mean shape basis, preferably a smooth
+   linear or two-piece trend on the same rerun-safe max-gap well.
+2. If the no-offset audit returns near 8.23-8.25, then the active wrapper
+   baseline no longer matches the historical best. Stop probing and first
+   recover the exact v16/v21 behavior from component config and hashes.
+3. Do not submit calibrated offsets from v35/v36, and do not test more scalar
+   constant offsets on the same basis.
 
 ## Guardrails
 

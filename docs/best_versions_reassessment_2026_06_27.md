@@ -77,7 +77,12 @@ Build a pseudo-hidden selector table over train wells:
 
 ## Practical Submission Direction
 
-The next submission should be a selector notebook, not a new blend scalar. If
-artifact OOF generation is too expensive, start with a PF-only selector between
-PF h0.17, anchor, and PF/hold variants. If that cannot beat h0.17 locally, do
-not submit.
+Update 2026-06-28: v35/v36 tested a rerun-safe Public LB residual probe by
+offsetting the max PF/artifact-gap hidden well by +10/-10 ft. The pair scored
+8.247 and 8.236. This rejects constant offsets on the max-gap well and does not
+justify a calibrated offset submission.
+
+The next submission should be a no-offset audit of the current wrapper default,
+not another model tweak. If it scores near 8.13, residual probing can continue
+with zero-mean shape bases. If it scores near 8.23-8.25, first recover the exact
+v16/v21 behavior before any further selector or probe work.

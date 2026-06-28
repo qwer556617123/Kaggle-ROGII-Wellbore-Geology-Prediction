@@ -10,6 +10,7 @@ small summary tables. Large row-level diagnostics should stay out of git.
 - `experiment_log.md` - chronological experiment decisions and LB results.
 - `artifact_hidden_mask_cv_findings.md` - latest artifact-CV rejection and exact-overlap interpretation.
 - `best_versions_reassessment_2026_06_27.md` - current best-version interpretation.
+- `score_review_protocol.md` - required reflection and re-planning steps after each new Kaggle score.
 
 ## Keep In Git
 

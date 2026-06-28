@@ -13,6 +13,15 @@ scored 8.153, and the negative contact-surface residual scored 8.408. Do not
 continue same-family blending or contact-surface residuals. Reassess from
 `docs/best_versions_reassessment_2026_06_27.md`.
 
+Update 2026-06-28: the first rerun-safe residual probe pair was informative but
+not actionable. Max PF/artifact-gap hidden well constant offsets scored 8.247
+for +10 ft and 8.236 for -10 ft. The direction weakly favors lowering TVT, but
+the pair is below the 0.02 signal gate and both scores are far worse than the
+8.13 family. Treat constant offsets on the max-gap well as rejected. The new
+priority is to audit the current no-offset wrapper baseline before any further
+probe, because v35/v36 used `component_default` artifact behavior while older
+v16/v21 labels have exact-overlap ambiguity.
+
 This competition reruns notebooks with substituted hidden test data, so local
 public test well IDs are not the Public LB target. Future work should focus on
 hidden-rerun-style CV over train wells and learned path/meta-selection. See
@@ -69,7 +78,9 @@ The current best public clue is PF/physical modeling rather than another global 
    - Fallback CPU-safe component probe: keep no-exact artifact 80/20 but swap fixed h0.17 PF for `bin_lb_safe`, testing per-bin PF meta-selection without changing blend weight.
    - Versions 25 and 27 scored 8.373 and 8.282, so PF selector swaps are rejected. The public notebooks explain the current 8.x family, but do not by themselves explain a 6.x score.
    - GPU quota reset path: retry TabICL using the public kojimar CUDA docker image (`gcr.io/kaggle-private-byod/python@sha256:57e612b...`) and `NvidiaTeslaT4`, because the prior v26 failure was a torch/CUDA image mismatch rather than a modeling result.
-   - Next breakthrough path: use Public LB as a low-dimensional residual probe. Generate symmetric perturbations around the v16/v22 baseline by well and by smooth trend basis, then use score differences to estimate the residual projection and construct a calibrated correction. This should replace further component guessing.
+   - Next breakthrough path: use Public LB as a low-dimensional residual probe, but only after a no-offset audit of the current wrapper baseline. The v35/v36 max-gap constant-offset pair rejected blunt offsets, not necessarily residual probing as a whole.
+   - If the no-offset audit is near 8.13, continue with symmetric zero-mean shape probes, such as a smooth linear or two-piece trend on the rerun-safe max-gap well. Do not submit calibrated constant offsets from v35/v36.
+   - If the no-offset audit is near 8.23-8.25, stop probing and recover the exact v16/v21 baseline behavior first, including artifact exact-overlap config and component hashes.
    - Learned PF/meta-selector: generate multiple PF candidates per well and train a local meta-model to choose/blend them using pseudo-hidden wells, instead of hand-coded bins.
    - Full-path ensemble search: sample PF trajectories, score them with global GR/event/shape criteria, and average only the best path families; do this carefully because the first path-rerank attempt was too brittle.
    - Formation/contact residual correction: the first row-level residual model was worse than h0.18, so only revisit with strong regularization or well-level corrections.
@@ -96,6 +107,10 @@ The current best public clue is PF/physical modeling rather than another global 
    - New interpretation: prior "no-exact" labels were partly misleading because
      the wrapper-level env could be overridden inside the artifact component
      before the 2026-06-27 fix. True no-exact is now empirically worse.
+   - The v35/v36 max-gap constant-offset probe added another rejection: simple
+     per-well TVT offsets are too blunt even when the well is chosen
+     rerun-safely from component disagreement. The next probe, if any, must be
+     shape-aware and preceded by a current-wrapper no-offset audit.
 6. Reconstruct v13 predictions for all three test wells and save a compact per-well trend table:
    - start TVT, end TVT, net change, min, max, standard deviation;
    - correction mean/std/range;
