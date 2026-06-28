@@ -20,18 +20,28 @@ Start with interpretable, low-risk bases:
 - per-well linear trend: zero-mean ramp, changing start/end trend without moving the well average;
 - later, if useful, add two-piece trend basis split at mid measured depth.
 
-Use `scripts/diagnostics/make_lb_probe_submission.py` to generate candidate CSVs from an existing base output.
+Do not use fixed public-test CSVs for this competition. Rerun-safe probes must
+be applied inside the Kaggle notebook after it recomputes predictions for the
+current hidden sample.
 
-## First Probe Pair
+## First Probe Pair Result
 
-Recommended first pair:
+First rerun-safe pair:
 
-- `00e12e8b` constant `+10 ft`
-- `00e12e8b` constant `-10 ft`
+- version 35: max PF/artifact component-gap hidden well, constant `+10 ft`,
+  Public LB `8.247`, ref `54118191`;
+- version 36: same basis, constant `-10 ft`, Public LB `8.236`, ref
+  `54118269`.
 
-Reason: prior artifact-weight probes moved `00e12e8b` downward and got worse, so the next question is whether the base is systematically too low on that well.
+The direction weakly favors lowering TVT on the max-gap well, but the symmetric
+score gap is only `0.011`, below the `0.02` signal gate. Both probes are also
+well worse than the 8.13 baseline. Do not submit a calibrated offset from this
+pair.
 
-If this pair shows signal, convert the score delta into an estimated optimal offset and submit the calibrated offset. If not, move to `00bbac68` linear trend, then `000d7d20` linear trend.
+Next probe should move to a different low-dimensional basis, such as a
+rerun-safe smooth trend basis on the max-gap well or another prefix-selected
+well family. Avoid more constant-offset probes on the same max-gap basis unless
+a new diagnostic explains why this pair was too blunt.
 
 ## Guardrails
 
