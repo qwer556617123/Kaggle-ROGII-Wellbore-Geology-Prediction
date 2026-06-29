@@ -28,6 +28,13 @@ version 37. This confirms baseline drift: the active wrapper default is not the
 exact historical wrapper/component behavior is recovered. The next submission
 must be a controlled baseline-recovery audit, not a new modeling idea.
 
+Follow-up 2026-06-30: downloaded v37 output confirms PF hash matches the v22
+audit, while the artifact hash differs. v37 used `component_default`, so it
+tested the saved-config exact-on path and failed to recover 8.13. The next
+controlled audit is therefore true no-exact 80/20 with
+`ROGII_ARTIFACT_EXACT_OVERLAP=0`, dynamic offset off, selector off, and contact
+weight 0.
+
 This competition reruns notebooks with substituted hidden test data, so local
 public test well IDs are not the Public LB target. Future work should focus on
 hidden-rerun-style CV over train wells and learned path/meta-selection. See
@@ -89,9 +96,9 @@ The current best public clue is PF/physical modeling rather than another global 
      until this is fixed.
    - Do not continue symmetric zero-mean shape probes yet. Their interpretation
      would be tied to the wrong base prediction.
-   - Recover the exact v16/v21 baseline behavior first, including wrapper
-     defaults, artifact exact-overlap handoff semantics, component source/config
-     hashes, and final submission hashes.
+   - Recover the exact v16/v21 baseline behavior first. The immediate candidate
+     is true no-exact 80/20, because v37 already rejected the saved-config
+     `component_default` path.
    - Learned PF/meta-selector: generate multiple PF candidates per well and train a local meta-model to choose/blend them using pseudo-hidden wells, instead of hand-coded bins.
    - Full-path ensemble search: sample PF trajectories, score them with global GR/event/shape criteria, and average only the best path families; do this carefully because the first path-rerank attempt was too brittle.
    - Formation/contact residual correction: the first row-level residual model was worse than h0.18, so only revisit with strong regularization or well-level corrections.
