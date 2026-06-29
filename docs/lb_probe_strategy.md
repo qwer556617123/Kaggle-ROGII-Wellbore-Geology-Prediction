@@ -51,12 +51,26 @@ with artifact `component_default`, while the historical v16/v21 labels have
 known exact-overlap ambiguity. Before spending more residual probes, run one
 no-offset audit version from the current wrapper and compare it against 8.13.
 
+## No-Offset Audit Result
+
+Version 37 ran the current wrapper with no dynamic offset and scored Public LB
+`8.230`, ref `54146870`. This lands in the baseline-drift branch of the
+decision tree. The v35/v36 scores are therefore not evidence that a good 8.13
+baseline was damaged only by the +/-10 ft perturbation; the active wrapper
+itself is already around 8.23 before any offset is applied.
+
+Immediate consequence: pause residual probing. A symmetric Public LB probe is
+only useful when the base prediction is the intended baseline. The next work is
+to recover the exact v16/v21 behavior, including wrapper defaults, artifact
+exact-overlap handoff semantics, component source/config hashes, and final
+submission hashes.
+
 Decision tree:
 
-1. If the no-offset audit returns near 8.13, then v35/v36 reject only the
+1. If a future recovered no-offset audit returns near 8.13, then v35/v36 reject only the
    constant-offset basis. Move to a zero-mean shape basis, preferably a smooth
    linear or two-piece trend on the same rerun-safe max-gap well.
-2. If the no-offset audit returns near 8.23-8.25, then the active wrapper
+2. The current v37 no-offset audit returned 8.230, so the active wrapper
    baseline no longer matches the historical best. Stop probing and first
    recover the exact v16/v21 behavior from component config and hashes.
 3. Do not submit calibrated offsets from v35/v36, and do not test more scalar
