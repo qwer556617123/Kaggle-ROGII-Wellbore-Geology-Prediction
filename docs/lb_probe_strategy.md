@@ -76,6 +76,37 @@ Decision tree:
 3. Do not submit calibrated offsets from v35/v36, and do not test more scalar
    constant offsets on the same basis.
 
+## Contact-Shape Basis Candidate
+
+Implemented 2026-06-30, but not yet eligible for Public LB submission while the
+baseline-recovery audit is pending.
+
+The new notebook hook is a rerun-safe, selected-well, zero-mean shape basis:
+
+- `ROGII_CONTACT_BASIS_RULE=max_contact_shape_gap`;
+- `ROGII_CONTACT_BASIS_VALUE=+0.25` or `-0.25`;
+- `ROGII_CONTACT_BASIS_MAX_ABS=30`.
+
+It reconstructs EGFDL/EGFDU contact surfaces from train X/Y with KNN plus a
+local weighted plane, converts the selected surface to TVT with a known-tail
+offset, subtracts the current base prediction, smooths/centers/clips the shape,
+then applies only the highest `mean_abs_basis * confidence` hidden well.
+
+Local lb-like pseudo-hidden proxy, 12 wells x fractions 0.45/0.60/0.75 with a
+fast PF baseline, gave:
+
+| variant | row RMSE | well mean RMSE | masks |
+| --- | ---: | ---: | ---: |
+| contact_shape_plus0p25 | 6.426 | 5.455 | 36 |
+| base_grid_s3_b0_h0p17 | 6.599 | 5.335 | 36 |
+| contact_shape_minus0p25 | 7.441 | 6.294 | 36 |
+
+Interpretation: `+0.25` has a real row-level direction signal and `-0.25` is
+mostly rejected, but the well-mean metric worsens because at least one selected
+well is strongly anti-aligned. If the recovered no-offset Kaggle baseline comes
+back near 8.13, submit only the symmetric `+0.25` / `-0.25` pair. Do not submit
+a calibrated contact offset in the same batch.
+
 ## Guardrails
 
 - Always submit symmetric pairs for probing.

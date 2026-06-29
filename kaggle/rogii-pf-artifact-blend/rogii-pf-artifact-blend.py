@@ -45,6 +45,9 @@ CONTACT_SURFACE_COL = os.getenv("ROGII_CONTACT_SURFACE_COL", "EGFDL")
 CONTACT_SURFACE_K = int(os.getenv("ROGII_CONTACT_SURFACE_K", "64"))
 CONTACT_SURFACE_STRIDE = int(os.getenv("ROGII_CONTACT_SURFACE_STRIDE", "20"))
 CONTACT_SURFACE_XY_SCALE = float(os.getenv("ROGII_CONTACT_SURFACE_XY_SCALE", "1000.0"))
+CONTACT_BASIS_RULE = os.getenv("ROGII_CONTACT_BASIS_RULE", "off").strip().lower()
+CONTACT_BASIS_VALUE = float(os.getenv("ROGII_CONTACT_BASIS_VALUE", "0"))
+CONTACT_BASIS_MAX_ABS = float(os.getenv("ROGII_CONTACT_BASIS_MAX_ABS", "30"))
 FINAL_DYNAMIC_OFFSET_RULE = os.getenv("ROGII_FINAL_DYNAMIC_OFFSET_RULE", "off").strip().lower()
 FINAL_DYNAMIC_OFFSET_VALUE = float(os.getenv("ROGII_FINAL_DYNAMIC_OFFSET_VALUE", "0"))
 FINAL_WELL_OFFSETS = {
@@ -55,6 +58,7 @@ FINAL_WELL_TRENDS = {
     str(k): float(v)
     for k, v in json.loads(os.getenv("ROGII_FINAL_WELL_TRENDS", "{}")).items()
 }
+CONTACT_BASIS_CONTACTS = ("EGFDL", "EGFDU")
 
 
 def write_component(name: str, code: str) -> Path:
@@ -203,6 +207,254 @@ def contact_surface_component(data_dir: Path, sample: pd.DataFrame) -> tuple[pd.
     if missing:
         raise RuntimeError(f"contact_surface has {missing} missing rows after sample alignment")
     return out, summary
+
+
+def build_contact_basis_pool(data_dir: Path, contacts: tuple[str, ...]) -> pd.DataFrame:
+    test_ids = set(well_ids(data_dir, "test"))
+    rows = []
+    usecols = ["X", "Y", *contacts]
+    for path in sorted((data_dir / "train").glob("*__horizontal_well.csv")):
+        wid = path.name.split("__")[0]
+        if wid in test_ids:
+            continue
+        try:
+            hw = pd.read_csv(path, usecols=usecols)
+        except ValueError:
+            continue
+        slim = hw.iloc[::CONTACT_SURFACE_STRIDE].dropna(subset=usecols).copy()
+        if not slim.empty:
+            rows.append(slim)
+    if not rows:
+        raise RuntimeError(f"No train rows found for contact basis contacts={contacts}")
+    return pd.concat(rows, ignore_index=True)
+
+
+def predict_contact_surface_knn(pool: pd.DataFrame, hw: pd.DataFrame, contact_col: str) -> np.ndarray:
+    train_xy = pool[["X", "Y"]].to_numpy(dtype=float) / CONTACT_SURFACE_XY_SCALE
+    target_xy = hw[["X", "Y"]].to_numpy(dtype=float) / CONTACT_SURFACE_XY_SCALE
+    tree = cKDTree(train_xy)
+    dist, idx = tree.query(target_xy, k=min(64, len(pool)), workers=-1)
+    if dist.ndim == 1:
+        dist = dist[:, None]
+        idx = idx[:, None]
+    vals = pool[contact_col].to_numpy(dtype=float)[idx]
+    weights = 1.0 / np.maximum(dist, 1e-3) ** 2
+    return np.sum(vals * weights, axis=1) / np.sum(weights, axis=1)
+
+
+def predict_contact_surface_plane(pool: pd.DataFrame, hw: pd.DataFrame, contact_col: str) -> np.ndarray:
+    train_xy = pool[["X", "Y"]].to_numpy(dtype=float) / CONTACT_SURFACE_XY_SCALE
+    target_xy = hw[["X", "Y"]].to_numpy(dtype=float) / CONTACT_SURFACE_XY_SCALE
+    values = pool[contact_col].to_numpy(dtype=float)
+    tree = cKDTree(train_xy)
+    dist, idx = tree.query(target_xy, k=min(64, len(pool)), workers=-1)
+    if dist.ndim == 1:
+        dist = dist[:, None]
+        idx = idx[:, None]
+    out = np.empty(len(target_xy), dtype=float)
+    for i in range(len(target_xy)):
+        local_xy = train_xy[idx[i]] - target_xy[i]
+        local_y = values[idx[i]]
+        weights = 1.0 / np.maximum(dist[i], 1e-3) ** 2
+        a = np.column_stack([local_xy[:, 0], local_xy[:, 1], np.ones(len(local_xy))])
+        root_w = np.sqrt(weights)
+        try:
+            coef, *_ = np.linalg.lstsq(a * root_w[:, None], local_y * root_w, rcond=None)
+            out[i] = float(coef[2])
+        except np.linalg.LinAlgError:
+            out[i] = float(np.average(local_y, weights=weights))
+    return out
+
+
+def smooth_center_clip_basis(values: np.ndarray, max_abs: float) -> np.ndarray:
+    basis = np.asarray(values, dtype=float).copy()
+    if len(basis) >= 5:
+        window = min(31, len(basis) if len(basis) % 2 == 1 else len(basis) - 1)
+        if window >= 5:
+            basis = (
+                pd.Series(basis)
+                .rolling(window, center=True, min_periods=1)
+                .mean()
+                .to_numpy(dtype=float)
+            )
+    basis = basis - float(np.mean(basis))
+    clipped = np.clip(basis, -float(max_abs), float(max_abs))
+    clipped = clipped - float(np.mean(clipped))
+    max_seen = float(np.max(np.abs(clipped))) if len(clipped) else 0.0
+    if max_seen > float(max_abs) > 0:
+        clipped *= float(max_abs) / max_seen
+    return clipped.astype(float)
+
+
+def contact_basis_for_rows(
+    hw: pd.DataFrame,
+    row_idx: np.ndarray,
+    base_tvt: np.ndarray,
+    knn_contact: np.ndarray,
+    plane_contact: np.ndarray,
+    max_abs: float,
+) -> tuple[np.ndarray, np.ndarray, dict[str, float]]:
+    contact_pred = np.median(np.vstack([knn_contact, plane_contact]), axis=0)
+    surface_base = contact_pred - hw["Z"].to_numpy(dtype=float)
+    known = hw["TVT_input"].notna().to_numpy() & np.isfinite(surface_base)
+    if int(known.sum()) < 8:
+        raise RuntimeError("Not enough known TVT_input rows to calibrate contact basis")
+
+    known_residual = hw.loc[known, "TVT_input"].to_numpy(dtype=float) - surface_base[known]
+    n_tail = min(80, max(12, len(known_residual) // 3))
+    tail = known_residual[-n_tail:]
+    weights = np.linspace(0.35, 1.0, len(tail))
+    offset = float(np.average(tail, weights=weights))
+    contact_tvt = surface_base + offset
+
+    row_idx = np.asarray(row_idx, dtype=int)
+    base_tvt = np.asarray(base_tvt, dtype=float)
+    order = np.argsort(row_idx)
+    raw_delta_sorted = contact_tvt[row_idx[order]] - base_tvt[order]
+    basis_sorted = smooth_center_clip_basis(raw_delta_sorted, max_abs)
+    basis = np.empty_like(basis_sorted)
+    basis[order] = basis_sorted
+
+    tail_fit = float(np.sqrt(np.mean((tail - offset) ** 2)))
+    known_fit = float(np.sqrt(np.mean((known_residual - offset) ** 2)))
+    method_gap = float(np.mean(np.abs(knn_contact[row_idx] - plane_contact[row_idx])))
+    tail_std = float(np.std(tail))
+    confidence = 1.0 / (1.0 + tail_fit / 20.0 + tail_std / 25.0 + method_gap / 25.0 + known_fit / 30.0)
+    confidence = float(np.clip(confidence, 0.05, 1.0))
+    meta = {
+        "offset": offset,
+        "n_known": float(known.sum()),
+        "n_tail": float(n_tail),
+        "tail_fit_rmse": tail_fit,
+        "known_fit_rmse": known_fit,
+        "tail_residual_std": tail_std,
+        "method_disagreement_mean": method_gap,
+        "basis_mean": float(np.mean(basis)),
+        "basis_mean_abs": float(np.mean(np.abs(basis))),
+        "basis_std": float(np.std(basis)),
+        "basis_max_abs": float(np.max(np.abs(basis))) if len(basis) else 0.0,
+        "confidence": confidence,
+    }
+    return basis, contact_tvt[row_idx], meta
+
+
+def select_contact_basis_candidate(candidates: list[dict[str, object]]) -> dict[str, object]:
+    if not candidates:
+        raise RuntimeError("No contact-basis candidates were produced")
+    return max(candidates, key=lambda item: float(item["score"]))
+
+
+def apply_contact_basis_probe(
+    data_dir: Path,
+    submission: pd.DataFrame,
+    rule: str,
+    value: float,
+    max_abs: float,
+    component_path: Path | None = None,
+) -> tuple[pd.DataFrame, list[dict[str, object]], dict[str, object], Path | None]:
+    summary: dict[str, object] = {
+        "rule": rule,
+        "value": float(value),
+        "max_abs": float(max_abs),
+        "contacts": list(CONTACT_BASIS_CONTACTS),
+        "k": 64,
+        "stride": CONTACT_SURFACE_STRIDE,
+        "xy_scale": CONTACT_SURFACE_XY_SCALE,
+        "candidates": {},
+        "skipped": [],
+    }
+    if rule in {"", "0", "off", "none"} or value == 0:
+        return submission, [], summary, None
+    if rule != "max_contact_shape_gap":
+        raise ValueError(f"Unknown ROGII_CONTACT_BASIS_RULE={rule}")
+
+    split = submission["id"].astype(str).str.rsplit("_", n=1, expand=True)
+    frame = submission.copy()
+    frame["well"] = split[0]
+    frame["row_idx"] = split[1].astype(int)
+    pool = build_contact_basis_pool(data_dir, CONTACT_BASIS_CONTACTS)
+    summary["pool_rows"] = int(len(pool))
+
+    candidates: list[dict[str, object]] = []
+    for well in sorted(frame["well"].unique()):
+        hw_path = data_dir / "test" / f"{well}__horizontal_well.csv"
+        if not hw_path.exists():
+            continue
+        hw = pd.read_csv(hw_path)
+        well_mask = frame["well"].to_numpy(str) == str(well)
+        row_idx = frame.loc[well_mask, "row_idx"].to_numpy(dtype=int)
+        base_tvt = frame.loc[well_mask, "tvt"].to_numpy(dtype=float)
+        for contact in CONTACT_BASIS_CONTACTS:
+            if contact not in pool.columns:
+                continue
+            knn = predict_contact_surface_knn(pool, hw, contact)
+            plane = predict_contact_surface_plane(pool, hw, contact)
+            try:
+                basis, contact_tvt, meta = contact_basis_for_rows(
+                    hw,
+                    row_idx,
+                    base_tvt,
+                    knn,
+                    plane,
+                    max_abs,
+                )
+            except (RuntimeError, ValueError, IndexError) as exc:
+                summary["skipped"].append({
+                    "well": str(well),
+                    "contact": contact,
+                    "reason": str(exc),
+                })
+                continue
+            score = float(meta["basis_mean_abs"] * meta["confidence"])
+            key = f"{well}:{contact}"
+            candidate_payload = {
+                str(k): float(v)
+                for k, v in meta.items()
+            }
+            candidate_payload.update({"score": score, "rows": int(len(row_idx))})
+            summary["candidates"][key] = candidate_payload
+            candidates.append({
+                "well": str(well),
+                "contact": contact,
+                "mask": well_mask,
+                "basis": basis,
+                "contact_tvt": contact_tvt,
+                "score": score,
+                "meta": meta,
+            })
+
+    selected = select_contact_basis_candidate(candidates)
+    out = submission.copy()
+    out.loc[selected["mask"], "tvt"] = (
+        out.loc[selected["mask"], "tvt"].to_numpy(dtype=float)
+        + float(value) * np.asarray(selected["basis"], dtype=float)
+    )
+
+    component_file = component_path or (WORKING / "contact_basis_component.csv")
+    component = submission[["id"]].copy()
+    component["basis"] = 0.0
+    component["contact_tvt"] = np.nan
+    component["selected"] = False
+    component["contact"] = ""
+    component.loc[selected["mask"], "basis"] = np.asarray(selected["basis"], dtype=float)
+    component.loc[selected["mask"], "contact_tvt"] = np.asarray(selected["contact_tvt"], dtype=float)
+    component.loc[selected["mask"], "selected"] = True
+    component.loc[selected["mask"], "contact"] = str(selected["contact"])
+    component.to_csv(component_file, index=False)
+
+    meta = selected["meta"]
+    operation = {
+        "rule": rule,
+        "well": str(selected["well"]),
+        "contact": str(selected["contact"]),
+        "kind": "contact_shape_basis",
+        "value": float(value),
+        "rows": int(np.sum(selected["mask"])),
+        "score": float(selected["score"]),
+        **{str(k): float(v) for k, v in meta.items()},
+    }
+    summary["selected"] = operation
+    return out, [operation], summary, component_file
 
 
 def sha256_file(path: Path) -> str:
@@ -551,6 +803,22 @@ def main() -> None:
             (1.0 - CONTACT_SURFACE_WEIGHT) * submission["tvt"].to_numpy(float)
             + CONTACT_SURFACE_WEIGHT * contact_surface["tvt"].to_numpy(float)
         )
+    contact_basis_summary: dict[str, object] = {}
+    contact_basis_ops: list[dict[str, object]] = []
+    contact_basis_component: Path | None = None
+    pre_contact_basis_hash = ""
+    if CONTACT_BASIS_RULE not in {"", "0", "off", "none"} and CONTACT_BASIS_VALUE != 0:
+        base_path = WORKING / "base_submission_before_contact_basis.csv"
+        submission.to_csv(base_path, index=False)
+        pre_contact_basis_hash = sha256_file(base_path)
+    submission, contact_basis_ops, contact_basis_summary, contact_basis_component = apply_contact_basis_probe(
+        data_dir,
+        submission,
+        CONTACT_BASIS_RULE,
+        CONTACT_BASIS_VALUE,
+        CONTACT_BASIS_MAX_ABS,
+        WORKING / "contact_basis_component.csv",
+    )
     out_path = WORKING / "submission.csv"
     submission.to_csv(out_path, index=False)
 
@@ -571,6 +839,14 @@ def main() -> None:
         "selector_features": selector_features,
         "contact_surface_weight": CONTACT_SURFACE_WEIGHT,
         "contact_surface_summary": contact_surface_summary,
+        "contact_basis_rule": CONTACT_BASIS_RULE,
+        "contact_basis_value": CONTACT_BASIS_VALUE,
+        "contact_basis_max_abs": CONTACT_BASIS_MAX_ABS,
+        "contact_basis_operations": contact_basis_ops,
+        "contact_basis_summary": contact_basis_summary,
+        "contact_basis_component": "" if contact_basis_component is None else str(contact_basis_component),
+        "contact_basis_component_sha256": "" if contact_basis_component is None else sha256_file(contact_basis_component),
+        "pre_contact_basis_submission_sha256": pre_contact_basis_hash,
         "dynamic_weight_operations": dynamic_weight_ops,
         "dynamic_well_stats": dynamic_well_stats,
         "component_gap_stats": component_gap_payload,
