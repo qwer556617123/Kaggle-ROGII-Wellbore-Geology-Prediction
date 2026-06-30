@@ -14,6 +14,9 @@ again reproduces the 8.13 family.
 
 - v35/v36 rejected the max-gap constant-offset basis.
 - v37 rejected the active wrapper as the base prediction for further probing.
+- v38 scored `8.279` with true wrapper-level no-exact 80/20. This rejects the
+  immediate recovery candidate and shows that the current artifact source plus
+  forced no-exact is worse than the v37 component-default path.
 - The old "no-exact" labels are not sufficient, because artifact exact-overlap
   behavior changed at both the wrapper-env and component-inference handoff
   layers.
@@ -25,8 +28,15 @@ again reproduces the 8.13 family.
   from the v22 audit artifact hash
   `92c5bae92dfc257c3e6b93ba425cb01cfb2b0ecbc15f74bc48957ff4f97b18a3`.
 - Since v37 used `component_default`, it effectively tested the saved-config
-  exact-on path and scored 8.230. The next audit should therefore force true
-  no-exact 80/20, rather than repeat the saved-config handoff.
+  exact-on path and scored 8.230. The v38 audit then forced true no-exact 80/20
+  and scored 8.279, so wrapper-level exact handoff is not the missing recovery
+  switch.
+- After v38, the better diagnosis is source-level drift. Historical v16-v31
+  wrappers embedded v10 artifact source hash `51c2409f...`; v38 embedded
+  `81d15d7d...`. The only substantive source differences are the sklearn RMSE
+  fallback and the inference-only exact-overlap env handoff. The next audit
+  should restore the legacy `51c2409f...` artifact source and then rerun the
+  no-offset 80/20 baseline.
 
 ## Recovery Hypotheses
 
@@ -57,20 +67,21 @@ identify the closest reproducible candidate to v16/v21.
 
 Submit only one baseline-recovery audit after the local table is complete:
 
-`true_noexact_80_20_recovery`
+`legacy_source_80_20_recovery`
 
 - PF: `grid_s3_b0_h0p17`;
 - PF/artifact weight: `80/20`;
 - selector: off;
 - contact weight: `0`;
 - dynamic final offset: off;
-- artifact exact behavior: force `ROGII_ARTIFACT_EXACT_OVERLAP=0`, so the
-  component cannot use the saved exact-coordinate blend.
+- artifact source: restore historical v10 source hash `51c2409f...`;
+- artifact exact behavior: preserve the legacy inference handoff rather than
+  forcing the new wrapper override.
 
 Acceptance gate:
 
 - if this returns near `8.13`, resume residual probing from this recovered base;
-- if this returns near `8.23`, true no-exact 80/20 is not sufficient and the next
-  audit must move to component source/config hashes;
+- if this returns near `8.23`, legacy source plus saved-config behavior is close
+  but still not exact, so inspect PF source/runtime and artifact dataset config;
 - if it is worse than `8.23`, revert the recovery candidate and do not stack new
   changes on it.

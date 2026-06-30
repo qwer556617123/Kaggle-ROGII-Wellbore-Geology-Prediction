@@ -35,6 +35,14 @@ controlled audit is therefore true no-exact 80/20 with
 `ROGII_ARTIFACT_EXACT_OVERLAP=0`, dynamic offset off, selector off, and contact
 weight 0.
 
+Second follow-up 2026-06-30: v38 true no-exact 80/20 scored Public LB 8.279,
+worse than v37. This rejects the wrapper-level exact override as the recovery
+switch. The artifact source itself drifted: historical v16-v31 used embedded
+v10 artifact source hash `51c2409f...`, while v38 used `81d15d7d...`. The next
+controlled audit is legacy artifact source `51c2409f...`, PF/artifact 80/20,
+selector off, contact off, dynamic offsets off. Do not submit contact-shape
+probes until this source-level baseline is tested.
+
 This competition reruns notebooks with substituted hidden test data, so local
 public test well IDs are not the Public LB target. Future work should focus on
 hidden-rerun-style CV over train wells and learned path/meta-selection. See
@@ -96,9 +104,10 @@ The current best public clue is PF/physical modeling rather than another global 
      until this is fixed.
    - Do not continue symmetric zero-mean shape probes yet. Their interpretation
      would be tied to the wrong base prediction.
-   - Recover the exact v16/v21 baseline behavior first. The immediate candidate
-     is true no-exact 80/20, because v37 already rejected the saved-config
-     `component_default` path.
+   - Recover the exact v16/v21 baseline behavior first. v37 rejected the new
+     source component-default path, and v38 rejected the new source true-noexact
+     path. The immediate candidate is legacy artifact source `51c2409f...` with
+     the historical inference handoff.
    - Learned PF/meta-selector: generate multiple PF candidates per well and train a local meta-model to choose/blend them using pseudo-hidden wells, instead of hand-coded bins.
    - Full-path ensemble search: sample PF trajectories, score them with global GR/event/shape criteria, and average only the best path families; do this carefully because the first path-rerank attempt was too brittle.
    - Formation/contact residual correction: the first row-level residual model was worse than h0.18, so only revisit with strong regularization or well-level corrections.

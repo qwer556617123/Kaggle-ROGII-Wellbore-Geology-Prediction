@@ -65,21 +65,27 @@ to recover the exact v16/v21 behavior, including wrapper defaults, artifact
 exact-overlap handoff semantics, component source/config hashes, and final
 submission hashes.
 
+Version 38 then forced current-source true no-exact 80/20 and scored `8.279`,
+ref `54177103`. This is worse than v37, so the missing baseline is not a simple
+wrapper-level exact override. Historical v16-v31 embedded artifact source hash
+`51c2409f...`; v38 embedded `81d15d7d...`. The next recovery audit must restore
+the legacy artifact source before any residual or contact-shape probe.
+
 Decision tree:
 
 1. If a future recovered no-offset audit returns near 8.13, then v35/v36 reject only the
    constant-offset basis. Move to a zero-mean shape basis, preferably a smooth
    linear or two-piece trend on the same rerun-safe max-gap well.
-2. The current v37 no-offset audit returned 8.230, so the active wrapper
+2. The v37/v38 recovery audits returned 8.230 and 8.279, so the active wrapper
    baseline no longer matches the historical best. Stop probing and first
-   recover the exact v16/v21 behavior from component config and hashes.
+   recover the exact v16/v21 behavior from legacy artifact source/config hashes.
 3. Do not submit calibrated offsets from v35/v36, and do not test more scalar
    constant offsets on the same basis.
 
 ## Contact-Shape Basis Candidate
 
 Implemented 2026-06-30, but not yet eligible for Public LB submission while the
-baseline-recovery audit is pending.
+legacy-source baseline-recovery audit is pending.
 
 The new notebook hook is a rerun-safe, selected-well, zero-mean shape basis:
 
@@ -103,9 +109,9 @@ fast PF baseline, gave:
 
 Interpretation: `+0.25` has a real row-level direction signal and `-0.25` is
 mostly rejected, but the well-mean metric worsens because at least one selected
-well is strongly anti-aligned. If the recovered no-offset Kaggle baseline comes
-back near 8.13, submit only the symmetric `+0.25` / `-0.25` pair. Do not submit
-a calibrated contact offset in the same batch.
+well is strongly anti-aligned. If the legacy-source no-offset Kaggle baseline
+comes back near 8.13, submit only the symmetric `+0.25` / `-0.25` pair. Do not
+submit a calibrated contact offset in the same batch.
 
 ## Guardrails
 
