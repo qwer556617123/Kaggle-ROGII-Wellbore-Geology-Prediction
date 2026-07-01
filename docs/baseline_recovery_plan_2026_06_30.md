@@ -37,6 +37,19 @@ again reproduces the 8.13 family.
   fallback and the inference-only exact-overlap env handoff. The next audit
   should restore the legacy `51c2409f...` artifact source and then rerun the
   no-offset 80/20 baseline.
+- v39 restored legacy source `51c2409f...` but used `component_default` exact
+  handoff and scored `8.314`. That rejects legacy-source saved-config behavior.
+  It does not reject legacy-source true no-exact, which is now the only missing
+  cell in the recovery matrix and the closest reproducible candidate to v16/v22.
+
+## Recovery Matrix
+
+| artifact source | exact handoff | Public LB | Decision |
+| --- | --- | ---: | --- |
+| current `81d15d...` | component default | 8.230 v37 | not 8.13 |
+| current `81d15d...` | forced no-exact | 8.279 v38 | worse |
+| legacy `51c240...` | component default | 8.314 v39 | worse |
+| legacy `51c240...` | forced no-exact | pending v40 | next audit |
 
 ## Recovery Hypotheses
 
@@ -67,7 +80,7 @@ identify the closest reproducible candidate to v16/v21.
 
 Submit only one baseline-recovery audit after the local table is complete:
 
-`legacy_source_80_20_recovery`
+`legacy_source_true_noexact_80_20_recovery`
 
 - PF: `grid_s3_b0_h0p17`;
 - PF/artifact weight: `80/20`;
@@ -75,13 +88,14 @@ Submit only one baseline-recovery audit after the local table is complete:
 - contact weight: `0`;
 - dynamic final offset: off;
 - artifact source: restore historical v10 source hash `51c2409f...`;
-- artifact exact behavior: preserve the legacy inference handoff rather than
-  forcing the new wrapper override.
+- artifact exact behavior: force `ROGII_ARTIFACT_EXACT_OVERLAP=0` on the legacy
+  source, matching the durable v22 summary and the likely v16/v21 path.
 
 Acceptance gate:
 
 - if this returns near `8.13`, resume residual probing from this recovered base;
-- if this returns near `8.23`, legacy source plus saved-config behavior is close
-  but still not exact, so inspect PF source/runtime and artifact dataset config;
+- if this returns near `8.23`, the v16/v21 labels likely depended on an
+  unrecoverable Kaggle-side or dataset-side artifact state; stop baseline
+  recovery and move to new-basis exploration from the best reproducible base;
 - if it is worse than `8.23`, revert the recovery candidate and do not stack new
   changes on it.

@@ -71,21 +71,27 @@ wrapper-level exact override. Historical v16-v31 embedded artifact source hash
 `51c2409f...`; v38 embedded `81d15d7d...`. The next recovery audit must restore
 the legacy artifact source before any residual or contact-shape probe.
 
+Version 39 restored legacy artifact source `51c2409f...` but left exact behavior
+at `component_default`; it scored `8.314`, worse than both v37 and v38. This
+rejects saved-config exact behavior on the legacy source. The remaining
+recovery cell is legacy source plus forced no-exact, which is also the closest
+match to the durable v22 audit summary.
+
 Decision tree:
 
 1. If a future recovered no-offset audit returns near 8.13, then v35/v36 reject only the
    constant-offset basis. Move to a zero-mean shape basis, preferably a smooth
    linear or two-piece trend on the same rerun-safe max-gap well.
-2. The v37/v38 recovery audits returned 8.230 and 8.279, so the active wrapper
-   baseline no longer matches the historical best. Stop probing and first
-   recover the exact v16/v21 behavior from legacy artifact source/config hashes.
+2. The v37/v38/v39 recovery audits returned 8.230, 8.279, and 8.314, so the
+   active wrapper baseline no longer matches the historical best. Stop probing
+   and first test the final recovery cell: legacy source plus forced no-exact.
 3. Do not submit calibrated offsets from v35/v36, and do not test more scalar
    constant offsets on the same basis.
 
 ## Contact-Shape Basis Candidate
 
 Implemented 2026-06-30, but not yet eligible for Public LB submission while the
-legacy-source baseline-recovery audit is pending.
+legacy-source true-noexact baseline-recovery audit is pending.
 
 The new notebook hook is a rerun-safe, selected-well, zero-mean shape basis:
 
@@ -109,9 +115,9 @@ fast PF baseline, gave:
 
 Interpretation: `+0.25` has a real row-level direction signal and `-0.25` is
 mostly rejected, but the well-mean metric worsens because at least one selected
-well is strongly anti-aligned. If the legacy-source no-offset Kaggle baseline
-comes back near 8.13, submit only the symmetric `+0.25` / `-0.25` pair. Do not
-submit a calibrated contact offset in the same batch.
+well is strongly anti-aligned. If legacy-source true-noexact returns near 8.13,
+submit only the symmetric `+0.25` / `-0.25` pair. Do not submit a calibrated
+contact offset in the same batch.
 
 ## Guardrails
 
