@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import gc
+import hashlib
 import json
 import multiprocessing
 import os
@@ -45,7 +46,10 @@ except ImportError:
 print("NUMBA:", _NUMBA)
 
 SEED = 42
-np.random.seed(SEED)
+SEED_SALT = os.environ.get("ROGII_ARTIFACT_SEED_SALT", "0")
+_GLOBAL_SEED_BYTES = hashlib.sha256(f"{SEED}:{SEED_SALT}:global".encode("utf-8")).digest()
+np.random.seed(int.from_bytes(_GLOBAL_SEED_BYTES[:4], "little"))
+print(f"SEED={SEED} SEED_SALT={SEED_SALT}")
 # Use ALL available cores — Kaggle typically gives 4 (sometimes 2×4 on multi-GPU)
 def env_flag(name: str, default: bool = False) -> bool:
     value = os.environ.get(name)
@@ -752,7 +756,8 @@ def _pf_z_loop(md_v, gr_v, z_v,
                gs, beta, icpt, zsig,
                PF_MOM, PF_VN, PF_PN, tmin, tmax,
                PF_GR_WT, PF_RESAMP, PF_ROUGH_P, PF_ROUGH_V,
-               gr_sm_v):
+               gr_sm_v, seed):
+    np.random.seed(seed)
     N   = len(pos)
     n_e = len(md_v)
     pts = np.empty(n_e, np.float32)
@@ -830,7 +835,8 @@ def _pf_ancc_loop(md_v, gr_v, z_v,
                   pos, rate, w, gs,
                   ANCC_ALPHA, ANCC_RN, ANCC_PN,
                   tmin, tmax, PF_RESAMP,
-                  ANCC_RP, ANCC_RR):
+                  ANCC_RP, ANCC_RR, seed):
+    np.random.seed(seed)
     N   = len(pos)
     n_e = len(md_v)
     pts = np.empty(n_e, np.float32)
@@ -914,6 +920,7 @@ def run_pf_z(hw: pd.DataFrame, tw_tvt: np.ndarray, tw_gr: np.ndarray,
     z_v   = ev["Z"].to_numpy(np.float32)
 
     if _NUMBA:
+        loop_seed = int(np.random.randint(0, 2_147_483_647))
         pts, std = _pf_z_loop(
             md_v, gr_v, z_v,
             tw_tvt.astype(np.float64), tw_gr.astype(np.float64),
@@ -924,6 +931,7 @@ def run_pf_z(hw: pd.DataFrame, tw_tvt: np.ndarray, tw_gr: np.ndarray,
             float(tmin), float(tmax),
             float(PF_GR_WT), float(PF_RESAMP), float(PF_ROUGH_P), float(PF_ROUGH_V),
             gr_sm_ev.astype(np.float64),
+            loop_seed,
         )
     else:
         tf_p  = interp1d(tw_tvt, tw_gr, bounds_error=False,
@@ -995,6 +1003,7 @@ def run_pf_ancc(hw: pd.DataFrame, tw_tvt: np.ndarray, tw_gr: np.ndarray,
     gr_v = ev["GR"].to_numpy(np.float32)
 
     if _NUMBA:
+        loop_seed = int(np.random.randint(0, 2_147_483_647))
         pts, std = _pf_ancc_loop(
             md_v.astype(np.float64), gr_v.astype(np.float64),
             z_v.astype(np.float64),
@@ -1003,6 +1012,7 @@ def run_pf_ancc(hw: pd.DataFrame, tw_tvt: np.ndarray, tw_gr: np.ndarray,
             float(ANCC_ALPHA), float(ANCC_RN), float(ANCC_PN),
             float(tmin), float(tmax), float(PF_RESAMP),
             float(ANCC_RP), float(ANCC_RR),
+            loop_seed,
         )
     else:
         pm    = float(kn["MD"].iloc[-1])
@@ -1270,6 +1280,8 @@ def _build_well_from_df(
     gr_cache: if provided, reuses pre-computed GR rolling stats (avoids recompute
               across augmentation splits of the same well).
     """
+    seed_bytes = hashlib.sha256(f"{SEED}:{SEED_SALT}:{wid}:{int(is_train)}:{len(hw)}".encode("utf-8")).digest()
+    np.random.seed(int.from_bytes(seed_bytes[:4], "little"))
     if _FI is None or _DI is None:
         _dbg(f"_build_well_from_df({wid}): imputers not set!", level="ERROR")
         return None

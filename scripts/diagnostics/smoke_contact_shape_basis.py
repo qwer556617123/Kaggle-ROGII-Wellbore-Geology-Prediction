@@ -28,8 +28,12 @@ def write_surface_train(path: Path, y: float, amp: float) -> None:
     df = pd.DataFrame({
         "X": x,
         "Y": y,
+        "ANCC": 1325.0 + 0.35 * shape,
+        "ASTNU": 1230.0 + 0.45 * shape,
+        "ASTNL": 1160.0 + 0.55 * shape,
+        "EGFDU": 1120.0 + 0.65 * shape,
         "EGFDL": 1100.0 + shape,
-        "EGFDU": 1100.0 + 0.65 * shape,
+        "BUDA": 965.0 + 0.25 * shape,
     })
     df.to_csv(path, index=False)
 
@@ -44,9 +48,16 @@ def write_test_well(path: Path, y: float, amp: float) -> None:
         "Y": y,
         "Z": np.full(n, 1000.0),
         "MD": x,
+        "GR": 80.0 + 0.4 * tvt,
         "TVT_input": np.where(np.arange(n) < 12, tvt, np.nan),
     })
     df.to_csv(path, index=False)
+
+
+def write_typewell(path: Path) -> None:
+    tvt = np.linspace(80.0, 150.0, 96)
+    gr = 80.0 + 0.4 * tvt
+    pd.DataFrame({"TVT": tvt, "GR": gr}).to_csv(path, index=False)
 
 
 def main() -> None:
@@ -70,6 +81,8 @@ def main() -> None:
         write_surface_train(data_dir / "train" / "train_small__horizontal_well.csv", 5000.0, 8.0)
         write_test_well(data_dir / "test" / "well_big__horizontal_well.csv", 0.0, 42.0)
         write_test_well(data_dir / "test" / "well_small__horizontal_well.csv", 5000.0, 8.0)
+        write_typewell(data_dir / "test" / "well_big__typewell.csv")
+        write_typewell(data_dir / "test" / "well_small__typewell.csv")
 
         ids = [f"well_big_{i}" for i in range(12, 24)] + [f"well_small_{i}" for i in range(12, 24)]
         submission = pd.DataFrame({"id": ids, "tvt": np.full(len(ids), 100.0)})
@@ -116,6 +129,24 @@ def main() -> None:
         )
         assert minus_ops[0]["well"] == plus_ops[0]["well"]
         assert np.allclose(minus["tvt"].to_numpy(dtype=float) - submission["tvt"].to_numpy(dtype=float), -changed)
+
+        tvt_grid = np.linspace(50.0, 180.0, 256)
+        tw = pd.DataFrame({
+            "TVT": tvt_grid,
+            "GR": 90.0 + 18.0 * np.sin(tvt_grid / 11.0) + 0.08 * tvt_grid,
+        })
+        path_true = np.linspace(70.0, 155.0, 64)
+        gr_true = np.interp(path_true, tw["TVT"], tw["GR"])
+        hw = pd.DataFrame({
+            "MD": np.arange(64, dtype=float),
+            "Z": np.zeros(64),
+            "GR": 1.7 * gr_true + 13.0,
+            "TVT_input": np.where(np.arange(64) < 32, path_true, np.nan),
+        })
+        path_shifted = path_true + 20.0
+        true_score = module.gr_typewell_path_score(hw, tw, path_true)
+        shifted_score = module.gr_typewell_path_score(hw, tw, path_shifted)
+        assert true_score["gr_loss"] < shifted_score["gr_loss"]
 
     print("contact shape basis smoke passed")
 

@@ -23,11 +23,38 @@ kernel_output*/
 
 # Local Kaggle reference pulls and smoke diagnostics
 kaggle/public/
+kaggle/external/
+kaggle/external_reviews/
+kaggle/external_hujile_maybe_you_like/
+kaggle/external_outputs/
+kaggle/kernel_outputs/
+kaggle/fusion_candidates/
+kaggle/cache/
+kaggle/outputs/
+
+# Generated Kaggle notebooks are reproducible from scripts/diagnostics.
+kaggle/rogii-*/
+!kaggle/rogii-pf-artifact-blend/
+!kaggle/rogii-pf-artifact-blend/**
+
+# Current scored C1/HMM base used by the calibration builders.
+!kaggle/rogii-mha400-cont-hmm010/
+!kaggle/rogii-mha400-cont-hmm010/**
 docs/*_smoke.csv
 docs/*_details*.csv
 docs/pf_residual_rows*.csv
+docs/*_gate.json
+docs/analog_residual_transfer*_summary.csv
+docs/contact_shape_basis_*_summary.csv
+docs/geo_*_summary.csv
+docs/candidate_*.csv
+docs/candidate_*.json
+docs/candidate_*.npz
+docs/lb_tomography_*.csv
+docs/lb_tomography_*.json
 kaggle/artifact_probe*/
 kaggle/artifact_blend_output*/
+kaggle/rogii-pf-artifact-blend/*_table.csv
 
 # Python cache
 __pycache__/

@@ -1,9 +1,14 @@
-"""Pseudo-hidden audit for the contact-shape residual basis probe."""
+"""Pseudo-hidden audit for geo-first datum/path selection.
+
+This diagnostic treats TVT prediction as candidate path selection. It uses
+train wells as pseudo-hidden test wells, with formation columns withheld from
+the target well and contact surfaces reconstructed from other train wells.
+"""
 from __future__ import annotations
 
 import argparse
-import json
 import importlib.util
+import json
 import sys
 from pathlib import Path
 
@@ -70,62 +75,64 @@ def load_contact_pool(data_dir: Path, exclude: str, stride: int, contacts: tuple
 def summarize(details: pd.DataFrame) -> pd.DataFrame:
     rows = []
     for variant, g in details.groupby("variant", sort=True):
-        row_rmse = float(np.sqrt(np.average(g["rmse"] ** 2, weights=g["n_eval"])))
         rows.append({
             "variant": variant,
             "n_masks": int(len(g)),
             "n_wells": int(g["well"].nunique()),
             "n_rows": int(g["n_eval"].sum()),
-            "row_rmse": row_rmse,
+            "row_rmse": float(np.sqrt(np.average(g["rmse"] ** 2, weights=g["n_eval"]))),
             "well_rmse_mean": float(g["rmse"].mean()),
             "well_rmse_median": float(g["rmse"].median()),
             "well_rmse_p75": float(g["rmse"].quantile(0.75)),
             "well_rmse_max": float(g["rmse"].max()),
-            "mean_selected_score": float(g["selected_score"].mean()),
-            "mean_basis_abs": float(g["basis_mean_abs"].mean()),
+            "mean_selector_score": float(g["selector_score"].mean()),
             "mean_confidence": float(g["confidence"].mean()),
         })
     return pd.DataFrame(rows).sort_values(["row_rmse", "well_rmse_mean"])
 
 
-def gate_summary(summary: pd.DataFrame, details: pd.DataFrame, min_row_gain: float, max_well_deterioration: float) -> dict[str, object]:
+def gate_summary(
+    summary: pd.DataFrame,
+    details: pd.DataFrame,
+    min_row_gain: float,
+    max_well_deterioration: float,
+    max_dominant_contact_fraction: float,
+) -> dict[str, object]:
     indexed = summary.set_index("variant")
     base = indexed.loc["base_grid_s3_b0_h0p17"]
-    plus = indexed.loc["contact_shape_plus0p25"]
-    minus = indexed.loc["contact_shape_minus0p25"]
-    best_name = "contact_shape_plus0p25" if float(plus["row_rmse"]) <= float(minus["row_rmse"]) else "contact_shape_minus0p25"
+    selector = indexed.loc["geo_path_selector_v1"]
+    conservative = indexed.loc["geo_path_hybrid_0p3"]
+    best_name = (
+        "geo_path_selector_v1"
+        if float(selector["row_rmse"]) <= float(conservative["row_rmse"])
+        else "geo_path_hybrid_0p3"
+    )
     best = indexed.loc[best_name]
     row_gain = float(base["row_rmse"] - best["row_rmse"])
     well_deterioration = float(best["well_rmse_mean"] - base["well_rmse_mean"])
-
-    pivot = details.pivot_table(
-        index=["well", "known_frac"],
-        columns="variant",
-        values="rmse",
-        aggfunc="first",
-    ).dropna()
-    improve_frac = float((pivot[best_name] < pivot["base_grid_s3_b0_h0p17"]).mean()) if len(pivot) else 0.0
-    selected = details[details["variant"] == "base_grid_s3_b0_h0p17"]
-    contact_counts = {
+    selected = details[details["variant"] == best_name].copy()
+    geo_contacts = selected[selected["selected_type"] == "geo_contact"]["selected_contact"].astype(str)
+    contact_distribution = {
         str(k): float(v)
-        for k, v in selected["selected_contact"].value_counts(normalize=True).to_dict().items()
+        for k, v in geo_contacts.value_counts(normalize=True).to_dict().items()
+        if str(k)
     }
-    dominant_contact_fraction = float(max(contact_counts.values())) if contact_counts else 0.0
+    dominant_contact_fraction = float(max(contact_distribution.values())) if contact_distribution else 0.0
     passed = (
         row_gain >= min_row_gain
         and well_deterioration <= max_well_deterioration
-        and improve_frac >= 0.50
+        and dominant_contact_fraction <= max_dominant_contact_fraction
     )
     return {
         "verdict": "PASS" if passed else "STOP",
         "best_variant": best_name,
         "row_gain": row_gain,
         "well_mean_deterioration": well_deterioration,
-        "mask_improve_fraction": improve_frac,
         "dominant_contact_fraction": dominant_contact_fraction,
-        "contact_distribution": contact_counts,
+        "contact_distribution": contact_distribution,
         "min_row_gain": float(min_row_gain),
         "max_well_deterioration": float(max_well_deterioration),
+        "max_dominant_contact_fraction": float(max_dominant_contact_fraction),
     }
 
 
@@ -133,23 +140,22 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data-dir", type=Path, default=Path("."))
     parser.add_argument("--selection", choices=["lb_like", "hard", "random", "all"], default="lb_like")
-    parser.add_argument("--well-limit", type=int, default=24)
+    parser.add_argument("--well-limit", type=int, default=100)
     parser.add_argument("--known-fracs", default="0.45,0.60,0.75")
     parser.add_argument("--min-known", type=int, default=80)
     parser.add_argument("--min-eval", type=int, default=80)
-    parser.add_argument("--particles", type=int, default=160)
-    parser.add_argument("--seeds", type=int, default=32)
-    parser.add_argument("--basis-value", type=float, default=0.25)
-    parser.add_argument("--max-abs", type=float, default=30.0)
+    parser.add_argument("--particles", type=int, default=40)
+    parser.add_argument("--seeds", type=int, default=4)
     parser.add_argument("--stride", type=int, default=20)
     parser.add_argument("--contacts", default=",".join(DEFAULT_CONTACTS))
-    parser.add_argument("--min-row-gain", type=float, default=0.15)
-    parser.add_argument("--max-well-deterioration", type=float, default=0.10)
+    parser.add_argument("--max-abs-delta", type=float, default=80.0)
+    parser.add_argument("--min-row-gain", type=float, default=0.30)
+    parser.add_argument("--max-well-deterioration", type=float, default=0.0)
+    parser.add_argument("--max-dominant-contact-fraction", type=float, default=0.45)
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--summary-output", type=Path, default=Path("docs/contact_shape_basis_summary.csv"))
-    parser.add_argument("--detail-output", type=Path, default=Path("docs/contact_shape_basis_details.csv"))
-    parser.add_argument("--gate-output", type=Path, default=Path("docs/contact_shape_basis_gate.json"))
-    parser.add_argument("--fail-on-deterioration", action="store_true")
+    parser.add_argument("--summary-output", type=Path, default=Path("docs/geo_path_selector_summary.csv"))
+    parser.add_argument("--detail-output", type=Path, default=Path("docs/geo_path_selector_details.csv"))
+    parser.add_argument("--gate-output", type=Path, default=Path("docs/geo_path_selector_gate.json"))
     return parser.parse_args()
 
 
@@ -158,13 +164,13 @@ def main() -> None:
     wrapper = load_module("rogii_pf_artifact_blend", WRAPPER)
     pf_eval = load_module("evaluate_pf_variants", PF_EVAL)
     cfg = pf_eval.PfConfig(n_particles=args.particles, n_seeds=args.seeds)
-    known_fracs = [float(x.strip()) for x in args.known_fracs.split(",") if x.strip()]
     contacts = tuple(x.strip() for x in args.contacts.split(",") if x.strip())
+    known_fracs = [float(x.strip()) for x in args.known_fracs.split(",") if x.strip()]
     wells = pf_eval.select_wells(args.data_dir, args.selection, args.well_limit, args.seed)
     rows: list[dict[str, object]] = []
 
     print(
-        f"Contact-shape audit wells={len(wells)} selection={args.selection} "
+        f"Geo path selector audit wells={len(wells)} selection={args.selection} "
         f"known_fracs={known_fracs} seeds={args.seeds} particles={args.particles}",
         flush=True,
     )
@@ -176,22 +182,18 @@ def main() -> None:
             print(f"[skip] {wid}: {exc}", flush=True)
             continue
         surface_cache: dict[str, dict[str, object]] = {}
-        surface_by_contact: dict[str, np.ndarray] = {}
         for contact in contacts:
-            if contact not in pool.columns or contact not in hw_raw.columns:
+            if contact not in pool.columns:
                 continue
             try:
                 geo, plane, knn, surf_meta = wrapper.predict_contact_surface_geo(pool, hw_raw, contact)
-                surface_cache[contact] = {
-                    "geo": geo,
-                    "plane": plane,
-                    "knn": knn,
-                    "meta": surf_meta,
-                }
-                surface_by_contact[contact] = geo
-            except RuntimeError as exc:
+            except (RuntimeError, ValueError, IndexError, np.linalg.LinAlgError) as exc:
                 print(f"[skip-surface] {wid} {contact}: {exc}", flush=True)
                 continue
+            surface_cache[contact] = {"geo": geo, "plane": plane, "knn": knn, "meta": surf_meta}
+        if not surface_cache:
+            print(f"[skip] {wid}: no contact surfaces", flush=True)
+            continue
         for known_frac in known_fracs:
             try:
                 hw, eval_mask = make_hidden_mask(hw_raw, known_frac, args.min_known, args.min_eval)
@@ -204,44 +206,46 @@ def main() -> None:
             row_idx = np.where(eval_mask)[0]
             base_eval = base_full[row_idx]
             y_true = hw.loc[eval_mask, "TVT"].to_numpy(dtype=float)
-
-            candidates = []
-            for contact, surfaces in surface_cache.items():
-                try:
-                    basis, _, meta = wrapper.contact_basis_for_rows(
-                        hw,
-                        row_idx,
-                        base_eval,
-                        np.asarray(surfaces["knn"], dtype=float),
-                        np.asarray(surfaces["plane"], dtype=float),
-                        args.max_abs,
-                        geo_contact=np.asarray(surfaces["geo"], dtype=float),
-                        surface_by_contact=surface_by_contact,
-                        tw=tw,
-                        surface_meta=surfaces["meta"],
-                    )
-                except RuntimeError as exc:
-                    print(f"[skip-contact] {wid} frac={known_frac:.2f} {contact}: {exc}", flush=True)
-                    continue
-                score = float(meta["basis_mean_abs"] * meta["confidence"])
-                candidates.append({
-                    "well": wid,
-                    "contact": contact,
-                    "basis": basis,
-                    "score": score,
-                    "meta": meta,
-                })
-            if not candidates:
+            try:
+                candidates = wrapper.build_geo_path_candidates(
+                    hw,
+                    tw,
+                    row_idx,
+                    base_eval,
+                    base_eval,
+                    None,
+                    pool,
+                    contacts=contacts,
+                    max_abs_delta=args.max_abs_delta,
+                    precomputed_surfaces=surface_cache,
+                )
+                selected, _ = wrapper.select_geo_path_candidate(hw, tw, candidates, row_idx, base_eval)
+            except (RuntimeError, ValueError, IndexError, np.linalg.LinAlgError) as exc:
+                print(f"[skip-selector] {wid} frac={known_frac:.2f}: {exc}", flush=True)
                 continue
-            selected = wrapper.select_contact_basis_candidate(candidates)
-            basis = np.asarray(selected["basis"], dtype=float)
-            meta = selected["meta"]
-            variants = {
-                "base_grid_s3_b0_h0p17": base_eval,
-                "contact_shape_plus0p25": base_eval + args.basis_value * basis,
-                "contact_shape_minus0p25": base_eval - args.basis_value * basis,
-            }
-            for variant, pred in variants.items():
+
+            scored_geo = []
+            scored_all = []
+            for cand in candidates:
+                score, meta = wrapper.geo_path_score(hw, tw, cand["full"], base_full, row_idx, cand.get("meta", {}))
+                pred = np.asarray(cand["full"], dtype=float)[row_idx]
+                scored_all.append((score, cand, pred, meta))
+                if cand["candidate_type"] == "geo_contact":
+                    scored_geo.append((score, cand, pred, meta))
+            if not scored_geo:
+                continue
+            oracle_geo = min(scored_geo, key=lambda item: rmse(y_true, item[2]))
+            gr_geo = min(scored_geo, key=lambda item: float(item[0]))
+            selected_pred = np.asarray(selected["full"], dtype=float)[row_idx]
+            conservative_pred = 0.7 * base_eval + 0.3 * selected_pred
+            variants = [
+                ("base_grid_s3_b0_h0p17", base_eval, {"candidate_type": "base_blend", "contact": "", "score": 0.0, "confidence": 1.0}),
+                ("best_single_geo_oracle", oracle_geo[2], {"candidate_type": "geo_contact", "contact": oracle_geo[1].get("contact", ""), **oracle_geo[3]}),
+                ("gr_selected_geo", gr_geo[2], {"candidate_type": "geo_contact", "contact": gr_geo[1].get("contact", ""), **gr_geo[3]}),
+                ("geo_path_selector_v1", selected_pred, {"candidate_type": selected["candidate_type"], "contact": selected.get("contact", ""), **selected["score_meta"]}),
+                ("geo_path_hybrid_0p3", conservative_pred, {"candidate_type": selected["candidate_type"], "contact": selected.get("contact", ""), **selected["score_meta"]}),
+            ]
+            for variant, pred, meta in variants:
                 rows.append({
                     "well": wid,
                     "known_frac": float(known_frac),
@@ -249,32 +253,34 @@ def main() -> None:
                     "rmse": rmse(y_true, pred),
                     "bias": float(np.mean(pred - y_true)),
                     "n_eval": int(eval_mask.sum()),
-                    "selected_contact": str(selected["contact"]),
-                    "selected_score": float(selected["score"]),
-                    **{str(k): float(v) for k, v in meta.items()},
+                    "selected_type": str(meta.get("candidate_type", "")),
+                    "selected_contact": str(meta.get("contact", "")),
+                    "selector_score": float(meta.get("selector_score", meta.get("score", 0.0))),
+                    "confidence": float(meta.get("confidence", 1.0)),
                 })
 
     if not rows:
-        raise RuntimeError("No contact-shape evaluations were produced")
-
+        raise RuntimeError("No geo path selector evaluations were produced")
     details = pd.DataFrame(rows)
     summary = summarize(details)
-    gate = gate_summary(summary, details, args.min_row_gain, args.max_well_deterioration)
+    gate = gate_summary(
+        summary,
+        details,
+        args.min_row_gain,
+        args.max_well_deterioration,
+        args.max_dominant_contact_fraction,
+    )
     args.summary_output.parent.mkdir(parents=True, exist_ok=True)
     summary.to_csv(args.summary_output, index=False)
     details.to_csv(args.detail_output, index=False)
     args.gate_output.write_text(json.dumps(gate, indent=2), encoding="utf-8")
-
     print("\nSummary")
     print(summary.to_string(index=False, float_format=lambda x: f"{x:.4f}"))
-
     print("\nGate")
-    print(pd.Series(gate).to_string())
+    print(json.dumps(gate, indent=2))
     print(f"Saved {args.detail_output}")
     print(f"Saved {args.summary_output}")
     print(f"Saved {args.gate_output}")
-    if args.fail_on_deterioration and gate["verdict"] == "STOP":
-        raise SystemExit(2)
 
 
 if __name__ == "__main__":
