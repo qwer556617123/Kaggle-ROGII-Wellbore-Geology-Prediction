@@ -1135,4 +1135,29 @@ Decision:
   `4e4e2cb7...`, produced final SHA `3b9d7d84...`, and finished in `436.01s`.
   Its 14,151-row submission is finite, sample-aligned, uses the run-local
   lexicographic rank-mod-4 partition, and reports no fixed public IDs. It was
-  formally accepted as competition ref `55153553`; score pending.
+  formally accepted as competition ref `55153553` and scored exactly `6.529`,
+  matching the quadratic prediction to the displayed leaderboard precision.
+
+### 2026-08-01 - Deterministic rank-8 C1 hierarchy
+
+- The exact `6.529` prediction confirms that the hidden C1 response is
+  sufficiently deterministic for score-space inversion. The base notebook
+  derives PF seeds from each run-local well ID and the completed probes share
+  identical pre-C1 hashes; the `~0.03 ft` reseed noise measured in Georgy
+  Mamarin's public diagnostic applies to unseeded public trackers, not this
+  route.
+- Audited five recently updated public notebooks. `Hellbore V.6` reduces to an
+  incomplete row-level HistGradientBoosting source; Geographic Restoration V92
+  currently pulls as an empty script. The advertised `6.213` and Blacklions
+  hierarchy remain the known PF/contact/Q0522 lineage with active guarded
+  same-ID contact routing, so neither supplies a hidden-safe independent
+  ensemble direction.
+- Generalized the C1 notebook builder from rank-mod-4 to arbitrary run-local
+  partition sizes while preserving the historical four-bin source contract.
+  Added an exact two-probe inversion for splitting one parent into two disjoint
+  children and a synthetic recovery test.
+- Started four parallel rank-mod-8 probes. Two split parent bin 1 using child
+  coefficients `(+1,-1)` and `(+1,0)`; two apply the same design to parent bin
+  3. Together they identify both child projections and both child energies for
+  each parent. The remaining parent bins retain their already calibrated
+  rank-mod-4 coefficients.

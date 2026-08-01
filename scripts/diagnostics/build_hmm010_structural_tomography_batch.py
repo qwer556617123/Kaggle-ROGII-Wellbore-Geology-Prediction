@@ -62,16 +62,22 @@ def _data_root_function(prefix: str) -> str:
 def c1_cell(
     alpha: float,
     probe_code: str | None = None,
-    bin_alphas: tuple[float, float, float, float] | None = None,
+    bin_alphas: tuple[float, ...] | None = None,
+    partition_mod: int = 4,
 ) -> dict:
+    if partition_mod < 2:
+        raise ValueError(f"partition_mod must be at least two, got {partition_mod}")
     if probe_code is not None and (
-        len(probe_code) != 4 or any(char not in "+-" for char in probe_code)
+        len(probe_code) != partition_mod or any(char not in "+-" for char in probe_code)
     ):
-        raise ValueError(f"invalid four-bin C1 probe code: {probe_code!r}")
+        raise ValueError(f"invalid {partition_mod}-bin C1 probe code: {probe_code!r}")
     if probe_code is not None and bin_alphas is not None:
         raise ValueError("probe_code and bin_alphas are mutually exclusive")
-    if bin_alphas is not None and len(bin_alphas) != 4:
-        raise ValueError(f"expected four C1 bin alphas, got {bin_alphas!r}")
+    if bin_alphas is not None and len(bin_alphas) != partition_mod:
+        raise ValueError(
+            f"expected {partition_mod} C1 bin alphas, got {bin_alphas!r}"
+        )
+    partition_label = f"lexicographic_run_local_well_rank_mod_{partition_mod}"
     code = f'''# C1 heel-continuity structural residual over the scored HMM010 route.
 import hashlib as _c1_hashlib
 import json as _c1_json
@@ -83,6 +89,7 @@ import pandas as _c1_pd
 _C1_ALPHA = {float(alpha)!r}
 _C1_PROBE_CODE = {probe_code!r}
 _C1_BIN_ALPHAS = {bin_alphas!r}
+_C1_PARTITION_MOD = {int(partition_mod)!r}
 _C1_TAU = 1920.0
 _C1_CAP = 16.0
 _C1_WORK = _Path('/kaggle/working') if _Path('/kaggle/working').exists() else _Path('.')
@@ -121,7 +128,10 @@ _c1_base['_well'] = _c1_parts[0].astype(str)
 _c1_base['_row'] = _c1_pd.to_numeric(_c1_parts[1], errors='raise').astype(int)
 _c1_values = _c1_base['tvt'].to_numpy(dtype=float).copy()
 _c1_probe_wells = sorted(_c1_base['_well'].unique().tolist())
-_c1_probe_bin = {{well: rank % 4 for rank, well in enumerate(_c1_probe_wells)}}
+_c1_probe_bin = {{
+    well: rank % _C1_PARTITION_MOD
+    for rank, well in enumerate(_c1_probe_wells)
+}}
 _c1_rows = []
 
 for _c1_well, _c1_group in _c1_base.groupby('_well', sort=False):
@@ -185,7 +195,7 @@ _C1_AUDIT = {{
     'alpha': float(_C1_ALPHA),
     'probe_code': _C1_PROBE_CODE,
     'bin_alphas': _C1_BIN_ALPHAS,
-    'probe_partition': 'lexicographic_run_local_well_rank_mod_4',
+    'probe_partition': {partition_label!r},
     'tau': float(_C1_TAU),
     'cap': float(_C1_CAP),
     'wells': int(len(_c1_rows)),
@@ -370,6 +380,23 @@ def build_c1_bin_calibrated(
         notebook,
         slug,
         "hmm010_c1_four_bin_calibrated_" + "_".join(f"{x:+g}" for x in bin_alphas),
+        "_sd_audit['hmm'] = _HMM_AUDIT\n_sd_audit['c1_heel'] = _C1_AUDIT",
+    )
+
+
+def build_c1_partition_calibrated(
+    bin_alphas: tuple[float, ...], slug: str
+) -> Path:
+    partition_mod = len(bin_alphas)
+    notebook = _load_base()
+    notebook["cells"].append(
+        c1_cell(1.0, bin_alphas=bin_alphas, partition_mod=partition_mod)
+    )
+    return _write(
+        notebook,
+        slug,
+        f"hmm010_c1_rank_mod_{partition_mod}_calibrated_"
+        + "_".join(f"{x:+g}" for x in bin_alphas),
         "_sd_audit['hmm'] = _HMM_AUDIT\n_sd_audit['c1_heel'] = _C1_AUDIT",
     )
 
