@@ -1117,3 +1117,22 @@ Decision:
   `q1`. A synthetic test exactly recovers all four projections, energies, raw
   optima, and rounded deployment coefficients. The next submission is the
   single fully calibrated vector, not another probe.
+- The three calibration submissions scored `6.682` (bin 0), `6.654` (bin 3),
+  and `6.572` (bin 1 disabled at alpha `0.35`). Recovered bin energies are
+  `[2.160390, 1.259924, 1.774653, 4.243732]`; combined with the Hadamard
+  projections, the raw optimum is
+  `[0.543347, -0.383811, 0.115831, 0.566062]`.
+- A 20,000-draw audit of Public score rounding kept the 95% coefficient ranges
+  narrow: bin 0 `[0.541, 0.546]`, bin 1 `[-0.410, -0.360]`, bin 2
+  `[0.111, 0.121]`, and bin 3 `[0.565, 0.567]`. The rounded deployment vector
+  is therefore stable at `(0.55, -0.375, 0.125, 0.575)`, with quadratic
+  predicted score `6.529`.
+- The symmetric orientation anti-field scored `7.642`, confirming the fitted
+  optimum near only `+0.025`; the cross-well orientation family remains
+  retired. It is not mixed into the calibrated C1 candidate.
+- Built and ran `rogii-hmm010-c1cal-55m375125575` Version 1. The completed
+  hidden rerun used the expected four coefficients, preserved pre-C1 SHA
+  `4e4e2cb7...`, produced final SHA `3b9d7d84...`, and finished in `436.01s`.
+  Its 14,151-row submission is finite, sample-aligned, uses the run-local
+  lexicographic rank-mod-4 partition, and reports no fixed public IDs. It was
+  formally accepted as competition ref `55153553`; score pending.
