@@ -1161,3 +1161,8 @@ Decision:
   3. Together they identify both child projections and both child energies for
   each parent. The remaining parent bins retain their already calibrated
   rank-mod-4 coefficients.
+- All four kernels completed in `269-425s` and passed output audits. They share
+  pre-C1 SHA `4e4e2cb7...`, use the exact expected eight-bin coefficient
+  vectors, remain sample-aligned and finite, and report no fixed public IDs.
+  The formal submissions are bin1 split `55163105`, bin1 child `55163117`,
+  bin3 split `55163120`, and bin3 child `55163123`; all are pending.
