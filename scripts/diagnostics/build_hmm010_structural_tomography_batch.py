@@ -15,6 +15,22 @@ from build_stopdose_breakthrough_notebooks import (
 
 BASE_DIR = Path("kaggle/rogii-mha400-cont-hmm010")
 BASE_NOTEBOOK = BASE_DIR / "rogii-mha400-cont-hmm010.ipynb"
+_FIXED_DATASET_ASSIGNMENT = (
+    '    dataset_path = Path("/kaggle/input/competitions/'
+    'rogii-wellbore-geology-prediction")'
+)
+_MOUNT_SAFE_DATASET_ASSIGNMENT = '''    dataset_path = next(
+        (
+            candidate
+            for candidate in (
+                Path("/kaggle/input/competitions/rogii-wellbore-geology-prediction"),
+                Path("/kaggle/input/rogii-wellbore-geology-prediction"),
+            )
+            if (candidate / "sample_submission.csv").exists()
+            and any((candidate / "train").glob("*__horizontal_well.csv"))
+        ),
+        Path("/kaggle/input/competitions/rogii-wellbore-geology-prediction"),
+    )'''
 
 
 def _joined(notebook: dict) -> str:
@@ -23,16 +39,27 @@ def _joined(notebook: dict) -> str:
 
 def _load_base() -> dict:
     notebook = json.loads(BASE_NOTEBOOK.read_text(encoding="utf-8"))
+    replacements = 0
     for cell in notebook["cells"]:
         if cell.get("cell_type") == "code":
             cell["execution_count"] = None
             cell["outputs"] = []
+            cell_source = source(cell)
+            if _FIXED_DATASET_ASSIGNMENT in cell_source:
+                cell["source"] = cell_source.replace(
+                    _FIXED_DATASET_ASSIGNMENT,
+                    _MOUNT_SAFE_DATASET_ASSIGNMENT,
+                ).splitlines(keepends=True)
+                replacements += 1
+    if replacements != 1:
+        raise RuntimeError(f"expected one fixed dataset assignment, got {replacements}")
     joined = _joined(notebook)
     required = (
         "_HMM_WEIGHT = 0.1",
         "mha400_continuity_plus_student_t_hmm010",
         "_UC_CAP = 8.000000",
         "_UC_TAU = 240.000000",
+        'Path("/kaggle/input/rogii-wellbore-geology-prediction")',
     )
     missing = [fragment for fragment in required if fragment not in joined]
     if missing:
