@@ -16,9 +16,30 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def audit(root: Path, parent_code: int, child_code: int) -> dict[str, object]:
+def completed_directories(root: Path, slug: str) -> list[Path]:
+    directories = []
+    for directory in root.glob(f"{slug}-v*"):
+        if (directory / "datum16_code_audit.json").exists():
+            directories.append(directory)
+    return sorted(
+        directories,
+        key=lambda path: int(path.name.rsplit("-v", 1)[1]),
+    )
+
+
+def audit(
+    root: Path,
+    parent_code: int,
+    child_code: int,
+    latest: bool = False,
+) -> dict[str, object]:
     slug = f"rogii-c1r8-d16-a{parent_code}b{child_code}"
     directory = root / f"{slug}-v1"
+    if latest:
+        candidates = completed_directories(root, slug)
+        if not candidates:
+            raise RuntimeError(f"no completed output for {slug}")
+        directory = candidates[-1]
     datum = json.loads(
         (directory / "datum16_code_audit.json").read_text(encoding="utf-8")
     )
@@ -64,6 +85,7 @@ def audit(root: Path, parent_code: int, child_code: int) -> dict[str, object]:
         raise RuntimeError(f"contract/runtime gate failed for {slug}")
     return {
         "slug": slug,
+        "version": int(directory.name.rsplit("-v", 1)[1]),
         "parent_code_index": parent_code,
         "child_code_index": child_code,
         "leaf_code": expected_leaf_code,
@@ -84,21 +106,27 @@ def main() -> None:
         action="store_true",
         help="Audit only outputs currently present under root.",
     )
+    parser.add_argument(
+        "--latest",
+        action="store_true",
+        help="Use the newest completed downloaded version for each notebook.",
+    )
     args = parser.parse_args()
     indices = list(CODE_INDICES)
     if args.partial:
         indices = [
             (parent, child)
             for parent, child in indices
-            if (
-                args.root
-                / f"rogii-c1r8-d16-a{parent}b{child}-v1"
-                / "datum16_code_audit.json"
-            ).exists()
+            if completed_directories(
+                args.root, f"rogii-c1r8-d16-a{parent}b{child}"
+            )
         ]
         if not indices:
             raise RuntimeError("no completed datum16 outputs found")
-    reports = [audit(args.root, parent, child) for parent, child in indices]
+    reports = [
+        audit(args.root, parent, child, latest=args.latest)
+        for parent, child in indices
+    ]
     if len({row["base_sha256"] for row in reports}) != 1:
         raise RuntimeError("datum16 probes do not share one rank-8 anchor")
     if len({tuple(row["parent_bin_rows"]) for row in reports}) != 1:
