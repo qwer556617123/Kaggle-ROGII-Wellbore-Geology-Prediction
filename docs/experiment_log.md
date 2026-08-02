@@ -1165,4 +1165,30 @@ Decision:
   pre-C1 SHA `4e4e2cb7...`, use the exact expected eight-bin coefficient
   vectors, remain sample-aligned and finite, and report no fixed public IDs.
   The formal submissions are bin1 split `55163105`, bin1 child `55163117`,
-  bin3 split `55163120`, and bin3 child `55163123`; all are pending.
+  bin3 split `55163120`, and bin3 child `55163123`.
+- The four scores were respectively `6.816`, `6.822`, `7.022`, and `6.648`.
+  Parent bin 1 splits into `(p,q)=(0.332165,1.038938)` and
+  `(0.151407,0.220986)`, with alpha `(-0.319716,-0.685143)`. Parent bin 3
+  splits into `(-1.144024,1.647536)` and `(-1.258192,2.596196)`, with alpha
+  `(0.694385,0.484629)`.
+- The split improves the rank-4 quadratic by only about `0.0053 RMSE`; a
+  50,000-draw score-rounding audit predicts `6.5235-6.5242`. Deploy the rounded
+  rank-8 vector `(0.55,-0.325,0.125,0.70,0.55,-0.675,0.125,0.475)`, then stop
+  subdividing C1 because the remaining capacity is too small for the deadline.
+
+### 2026-08-02 - Row-balanced datum ensemble tomography
+
+- A near-zero global datum optimum does not imply that per-well datum errors
+  are small; positive and negative well biases can cancel. Datum is also the
+  dominant geological uncertainty left after shape tracking, so it is a more
+  promising conditional ensemble basis than another correlated PF/HMM blend.
+- Added four `+/-2 ft` datum Hadamard codes over the calibrated rank-8 C1
+  anchor. Run-local wells are packed largest-first into four bins by eval-row
+  count, making the squared-error energies nearly balanced without using any
+  fixed ID. Every row moves by exactly two feet, so the four scores identify
+  all four residual projections.
+- The final calibration will divide each decoded projection by the bin's
+  run-local row fraction recorded inside the hidden rerun, rather than assuming
+  exact 25% energies. Synthetic recovery, notebook compile, metadata, and
+  fixed-ID checks passed. The four code notebooks were pushed in parallel;
+  score submission remains gated on completed output hashes and runtimes.
