@@ -31,6 +31,21 @@ _MOUNT_SAFE_DATASET_ASSIGNMENT = '''    dataset_path = next(
         ),
         Path("/kaggle/input/competitions/rogii-wellbore-geology-prediction"),
     )'''
+_FIXED_ARTIFACT_ASSIGNMENT = (
+    '    artifacts_path = Path("/kaggle/input/datasets/ravaghi/'
+    'wellbore-geology-prediction-artifacts")'
+)
+_MOUNT_SAFE_ARTIFACT_ASSIGNMENT = '''    artifacts_path = next(
+        (
+            candidate
+            for candidate in (
+                Path("/kaggle/input/datasets/ravaghi/wellbore-geology-prediction-artifacts"),
+                Path("/kaggle/input/wellbore-geology-prediction-artifacts"),
+            )
+            if (candidate / "data" / "train.csv").exists()
+        ),
+        Path("/kaggle/input/datasets/ravaghi/wellbore-geology-prediction-artifacts"),
+    )'''
 
 
 def _joined(notebook: dict) -> str:
@@ -39,7 +54,8 @@ def _joined(notebook: dict) -> str:
 
 def _load_base() -> dict:
     notebook = json.loads(BASE_NOTEBOOK.read_text(encoding="utf-8"))
-    replacements = 0
+    dataset_replacements = 0
+    artifact_replacements = 0
     for cell in notebook["cells"]:
         if cell.get("cell_type") == "code":
             cell["execution_count"] = None
@@ -50,9 +66,19 @@ def _load_base() -> dict:
                     _FIXED_DATASET_ASSIGNMENT,
                     _MOUNT_SAFE_DATASET_ASSIGNMENT,
                 ).splitlines(keepends=True)
-                replacements += 1
-    if replacements != 1:
-        raise RuntimeError(f"expected one fixed dataset assignment, got {replacements}")
+                dataset_replacements += 1
+                cell_source = source(cell)
+            if _FIXED_ARTIFACT_ASSIGNMENT in cell_source:
+                cell["source"] = cell_source.replace(
+                    _FIXED_ARTIFACT_ASSIGNMENT,
+                    _MOUNT_SAFE_ARTIFACT_ASSIGNMENT,
+                ).splitlines(keepends=True)
+                artifact_replacements += 1
+    if dataset_replacements != 1 or artifact_replacements != 1:
+        raise RuntimeError(
+            "unexpected fixed mount assignments: "
+            f"dataset={dataset_replacements}, artifacts={artifact_replacements}"
+        )
     joined = _joined(notebook)
     required = (
         "_HMM_WEIGHT = 0.1",
@@ -60,6 +86,7 @@ def _load_base() -> dict:
         "_UC_CAP = 8.000000",
         "_UC_TAU = 240.000000",
         'Path("/kaggle/input/rogii-wellbore-geology-prediction")',
+        'Path("/kaggle/input/wellbore-geology-prediction-artifacts")',
     )
     missing = [fragment for fragment in required if fragment not in joined]
     if missing:
