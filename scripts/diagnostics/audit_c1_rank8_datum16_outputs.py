@@ -79,8 +79,26 @@ def audit(root: Path, parent_code: int, child_code: int) -> dict[str, object]:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", type=Path, default=Path("kaggle/outputs"))
+    parser.add_argument(
+        "--partial",
+        action="store_true",
+        help="Audit only outputs currently present under root.",
+    )
     args = parser.parse_args()
-    reports = [audit(args.root, parent, child) for parent, child in CODE_INDICES]
+    indices = list(CODE_INDICES)
+    if args.partial:
+        indices = [
+            (parent, child)
+            for parent, child in indices
+            if (
+                args.root
+                / f"rogii-c1r8-d16-a{parent}b{child}-v1"
+                / "datum16_code_audit.json"
+            ).exists()
+        ]
+        if not indices:
+            raise RuntimeError("no completed datum16 outputs found")
+    reports = [audit(args.root, parent, child) for parent, child in indices]
     if len({row["base_sha256"] for row in reports}) != 1:
         raise RuntimeError("datum16 probes do not share one rank-8 anchor")
     if len({tuple(row["parent_bin_rows"]) for row in reports}) != 1:

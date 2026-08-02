@@ -49,7 +49,11 @@ def audit(directory: Path) -> dict[str, object]:
     if not np.allclose(datum["deployed_bin_offsets"], expected, atol=1.0e-12):
         raise RuntimeError("deployed offset calculation mismatch")
     delta = values - base_values
-    if not np.allclose(np.sort(np.unique(np.round(delta, 10))), np.sort(np.unique(np.round(expected, 10)))):
+    active_expected = expected[fractions > 0.0]
+    if not np.allclose(
+        np.sort(np.unique(np.round(delta, 10))),
+        np.sort(np.unique(np.round(active_expected, 10))),
+    ):
         raise RuntimeError("submission deltas do not match deployed offsets")
     base_hash = sha256(directory / "submission_before_datum_calibration.csv")
     final_hash = sha256(directory / "submission.csv")
