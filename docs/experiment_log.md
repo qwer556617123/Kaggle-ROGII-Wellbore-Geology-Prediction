@@ -1198,4 +1198,17 @@ Decision:
   `55177254` (`+-+-`), and `55177255` (`+--+`), all pending.
 - The fully calibrated rank-8 C1 notebook also passed its output audit in
   `269.13s`, with final SHA `d43351ce...`; it was accepted as ref `55177148`,
-  score pending.
+  and scored `6.524`, matching the expected `6.5235-6.5242` range.
+- Datum codes scored `6.851`, `6.878`, `6.639`, and `6.861`. Decoded bin
+  projections are `[-0.053599,+0.193340,-0.210480,+0.164145]`; under equal
+  row fractions the offsets are `[+0.214,-0.773,+0.842,-0.657] ft` and the
+  predicted score is `6.490`. Score-rounding simulation gives
+  `6.4892-6.4902`. The final notebook divides by actual run-local row fractions
+  and caps offsets at `+/-2 ft`.
+- Reinterpreted the four scored parent codes as rows `(a,0)` of a nested
+  `H4 x H4` 16-bin Hadamard system. Each existing row-balanced parent is split
+  independently into four row-balanced children. The remaining 12 `(a,b)`
+  codes with `b=1,2,3` identify all leaf projections without spending probes
+  on hierarchical energy recovery; leaf energy is its exact run-local row
+  fraction. The schedule is five codes on Aug 3, five on Aug 4, the final two
+  plus calibrated deployment on Aug 5.
