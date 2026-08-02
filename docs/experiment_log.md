@@ -1190,5 +1190,12 @@ Decision:
 - The final calibration will divide each decoded projection by the bin's
   run-local row fraction recorded inside the hidden rerun, rather than assuming
   exact 25% energies. Synthetic recovery, notebook compile, metadata, and
-  fixed-ID checks passed. The four code notebooks were pushed in parallel;
-  score submission remains gated on completed output hashes and runtimes.
+  fixed-ID checks passed.
+- All four code notebooks completed in `391-500s`. Output audits share rank-8
+  anchor SHA `10a6df68...`, confirm every visible row moved by exactly
+  `+/-2 ft`, report move MSE exactly `4.0`, and preserve identical row-balanced
+  partitions. Formal refs are `55177251` (`++++`), `55177253` (`++--`),
+  `55177254` (`+-+-`), and `55177255` (`+--+`), all pending.
+- The fully calibrated rank-8 C1 notebook also passed its output audit in
+  `269.13s`, with final SHA `d43351ce...`; it was accepted as ref `55177148`,
+  score pending.
