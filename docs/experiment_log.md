@@ -1212,3 +1212,22 @@ Decision:
   on hierarchical energy recovery; leaf energy is its exact run-local row
   fraction. The schedule is five codes on Aug 3, five on Aug 4, the final two
   plus calibrated deployment on Aug 5.
+- The live leaderboard top-10 threshold on Aug 2 is `5.308`; four-bin datum
+  calibration explains only about `0.44 RMSE^2`, so it is a reliable incremental
+  correction rather than the full `14.39 RMSE^2` breakthrough required from
+  the `6.524` anchor. The first four child-code probes are therefore an energy
+  gate: stop the remaining split if their recovered orthogonal energy is tiny.
+- Recent public sources `hahaha-det-agi`, `rogii-contact-and-u-restore`, and
+  `rogii-physics-informed-stacked-ensemble-v2` were re-audited. All retain the
+  same `vp_balanced_modelpkg_005` lineage plus fixed ID/row/hash and same-ID
+  train-contact branches; their hidden-safe PF/model-package components have
+  already scored in the local `7.x` rebuild family. No new external anchor is
+  eligible from this group.
+- Concurrent Kaggle runs exposed two platform mount variants. The shared
+  builder now selects a competition root only when train files and the sample
+  exist, and selects the Ravaghi artifact root only when `data/train.csv`
+  exists. Rebuilt outputs are bit-identical to successful pre-fix outputs.
+- The Aug 3 batch is fully output-audited and queued for `08:05 +08:00`:
+  four-group calibrated `v2`, plus datum16 `a0b1 v2`, `a1b1 v2`, `a2b1 v3`,
+  and `a3b1 v3`. A retrying background worker records acceptance in
+  `kaggle/submission_logs/c1_datum_aug3.log` after the daily quota resets.
