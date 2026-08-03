@@ -31,6 +31,7 @@ kaggle/kernel_outputs/
 kaggle/fusion_candidates/
 kaggle/cache/
 kaggle/outputs/
+kaggle/submission_logs/
 
 # Generated Kaggle notebooks are reproducible from scripts/diagnostics.
 kaggle/rogii-*/

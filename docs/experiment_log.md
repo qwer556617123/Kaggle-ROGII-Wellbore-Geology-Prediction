@@ -1231,3 +1231,27 @@ Decision:
   four-group calibrated `v2`, plus datum16 `a0b1 v2`, `a1b1 v2`, `a2b1 v3`,
   and `a3b1 v3`. A retrying background worker records acceptance in
   `kaggle/submission_logs/c1_datum_aug3.log` after the daily quota resets.
+
+### 2026-08-03 - Nested datum contrast calibration
+
+- The four-group calibrated datum scored `6.491`, within `0.001` of the
+  `6.490` quadratic prediction. This validates the squared-score projection
+  model and the deterministic run-local partition on the hidden rerun.
+- The four `b1` child codes scored `6.714`, `6.394`, `6.984`, and `6.867`.
+  Their decoded parent contrast projections are
+  `[-0.272333,-0.623182,+0.363445,+0.160875]`. The signal is much larger than
+  score rounding and passes the nested-datum energy gate.
+- Under balanced hidden leaf fractions, jointly solving parent datum and the
+  `b1` contrast predicts approximately `6.296`, including the `+/-3 ft` leaf
+  offset cap. This is a new anchor candidate, not enough by itself to reach the
+  current top ten but materially stronger than the four-group correction.
+- Built and ran `rogii-c1r8-d16-b1-calibrated` Version 1. The visible audit is
+  sample-aligned and finite, preserves rank-8 anchor SHA `10a6df68...`, has
+  final SHA `fe768ad9...`, and completes in `436.77s`. The downloadable
+  three-well template necessarily has singular child bins; the competition
+  hidden rerun supplies the multi-well partition used by the score inversion.
+- The Aug 4 batch is joint `b1` calibration plus all four orthogonal `b2`
+  codes. This uses one slot to test the predicted improvement and four slots
+  to recover another four leaf projections for a 12-dimensional deployment.
+  The remaining `b3` family is held for the final quota window rather than
+  blindly submitted before the `b2` energy is observed.
