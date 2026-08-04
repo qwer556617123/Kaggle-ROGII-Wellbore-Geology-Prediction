@@ -1255,3 +1255,25 @@ Decision:
   to recover another four leaf projections for a 12-dimensional deployment.
   The remaining `b3` family is held for the final quota window rather than
   blindly submitted before the `b2` energy is observed.
+
+### 2026-08-04 - Twelve-dimensional datum deployment
+
+- Joint parent plus `b1` calibration scored `6.314`, only `0.018` above the
+  balanced-hidden prediction of `6.296`. The hierarchical score inversion is
+  therefore stable enough for one more orthogonal datum stage.
+- The four `b2` codes scored `6.988`, `6.880`, `6.443`, and `6.715`. Decoded
+  parent contrasts are `[-0.217518,+0.597692,-0.130077,+0.317295]`, again far
+  above score-rounding noise and directionally distinct from `b1`.
+- The joint parent plus `b1+b2` deployment predicts approximately `6.170`
+  under balanced hidden leaves with the existing `+/-3 ft` cap. Version 1 ran
+  successfully in `409.74s`; it preserves base SHA `10a6df68...`, produces
+  final visible SHA `aca91b0a...`, and passes finite/order/fixed-ID checks.
+- Kaggle CLI confirms the deadline as `2026-08-05 23:59 UTC`, or Aug 6 07:59
+  in Taipei. The Aug 5 allocation is therefore four early submissions and one
+  reserved deployment slot: the 12-dimensional candidate plus `a0b3`,
+  `a1b3`, and `a2b3`. Three orthogonal rows recover the minimum-norm `b3`
+  contrast while assigning zero projection to the omitted fourth row.
+- Added an autonomous finalizer that waits for those three Public scores,
+  builds and runs the partial `b123` notebook, audits its output, and only then
+  uses the fifth competition slot. This avoids finishing the competition with
+  measured but undeployed tomography coefficients.

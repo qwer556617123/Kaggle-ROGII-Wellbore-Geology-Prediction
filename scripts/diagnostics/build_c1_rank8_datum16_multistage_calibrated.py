@@ -33,10 +33,12 @@ def solve_parent_coefficients(
 
 
 def multistage_cell(
-    child_code_indices: tuple[int, int],
-    contrast_projections: tuple[tuple[float, ...], tuple[float, ...]],
+    child_code_indices: tuple[int, ...],
+    contrast_projections: tuple[tuple[float, ...], ...],
 ) -> dict:
     child_codes = tuple(H4[index] for index in child_code_indices)
+    component_count = 1 + len(child_code_indices)
+    stage_label = "".join(str(index) for index in child_code_indices)
     code = f'''# Joint LB-decoded parent datum and two nested child contrasts.
 import hashlib as _dmc_hashlib
 import json as _dmc_json
@@ -49,6 +51,7 @@ _DMC_PARENT_PROJECTIONS = {BIN_PROJECTIONS!r}
 _DMC_CONTRAST_PROJECTIONS = {contrast_projections!r}
 _DMC_CHILD_CODE_INDICES = {child_code_indices!r}
 _DMC_CHILD_CODES = {child_codes!r}
+_DMC_COMPONENT_COUNT = {component_count!r}
 _DMC_OFFSET_CAP = {OFFSET_CAP!r}
 _DMC_WORK = _DmcPath('/kaggle/working') if _DmcPath('/kaggle/working').exists() else _DmcPath('.')
 _DMC_SUB = _DMC_WORK / 'submission.csv'
@@ -95,7 +98,7 @@ _dmc_basis = _dmc_np.vstack([
 ])
 _dmc_parent_projection = _dmc_np.asarray(_DMC_PARENT_PROJECTIONS, dtype=float)
 _dmc_contrast_projection = _dmc_np.asarray(_DMC_CONTRAST_PROJECTIONS, dtype=float)
-_dmc_coefficients = _dmc_np.zeros((4, 3), dtype=float)
+_dmc_coefficients = _dmc_np.zeros((4, _DMC_COMPONENT_COUNT), dtype=float)
 _dmc_grams = []
 _dmc_ranks = []
 _dmc_conditions = []
@@ -104,7 +107,10 @@ for _dmc_parent in range(4):
     _dmc_gram = (_dmc_basis * _dmc_fractions[_dmc_parent][None, :]) @ _dmc_basis.T
     _dmc_rhs = -_dmc_np.asarray(
         [_dmc_parent_projection[_dmc_parent]]
-        + [_dmc_contrast_projection[index, _dmc_parent] for index in range(2)],
+        + [
+            _dmc_contrast_projection[index, _dmc_parent]
+            for index in range(len(_DMC_CHILD_CODES))
+        ],
         dtype=float,
     )
     if float(_dmc_fractions[_dmc_parent].sum()) > 0.0:
@@ -114,7 +120,7 @@ for _dmc_parent in range(4):
     _dmc_grams.append(_dmc_gram.tolist())
     _dmc_ranks.append(_dmc_rank)
     _dmc_conditions.append(
-        None if _dmc_rank < 3 else float(_dmc_np.linalg.cond(_dmc_gram))
+        None if _dmc_rank < _DMC_COMPONENT_COUNT else float(_dmc_np.linalg.cond(_dmc_gram))
     )
 
 _dmc_offsets = _dmc_np.clip(_dmc_raw_offsets, -_DMC_OFFSET_CAP, _DMC_OFFSET_CAP)
@@ -161,23 +167,25 @@ _DATUM16_MULTISTAGE_AUDIT = {{
     _dmc_json.dumps(_DATUM16_MULTISTAGE_AUDIT, indent=2, sort_keys=True), encoding='utf-8'
 )
 globals()['FINAL_SELECTED_BASE_SOURCE'] = _DMC_SUB
-globals()['FINAL_BASE_SOURCE_LABEL'] = 'c1_rank8_datum16_b12_calibrated'
+globals()['FINAL_BASE_SOURCE_LABEL'] = 'c1_rank8_datum16_b{stage_label}_calibrated'
 print('datum16 multistage audit:', _dmc_json.dumps(_DATUM16_MULTISTAGE_AUDIT, indent=2, sort_keys=True), flush=True)
 '''
     return code_cell(code)
 
 
 def build(
-    contrast_projections: tuple[tuple[float, ...], tuple[float, ...]],
+    contrast_projections: tuple[tuple[float, ...], ...],
+    child_code_indices: tuple[int, ...] = (1, 2),
 ) -> Path:
     notebook = _load_base()
     notebook["cells"].append(c1_cell(1.0, bin_alphas=C1_ALPHAS, partition_mod=8))
-    notebook["cells"].append(multistage_cell((1, 2), contrast_projections))
-    slug = "rogii-c1r8-d16-b12-calibrated"
+    notebook["cells"].append(multistage_cell(child_code_indices, contrast_projections))
+    stage_label = "".join(str(index) for index in child_code_indices)
+    slug = f"rogii-c1r8-d16-b{stage_label}-calibrated"
     output = _write(
         notebook,
         slug,
-        "c1_rank8_datum16_b12_joint_calibrated",
+        f"c1_rank8_datum16_b{stage_label}_joint_calibrated",
         "_sd_audit['hmm'] = _HMM_AUDIT\n"
         "_sd_audit['c1_heel'] = _C1_AUDIT\n"
         "_sd_audit['datum16_multistage'] = _DATUM16_MULTISTAGE_AUDIT",
@@ -185,6 +193,7 @@ def build(
     generated = json.loads(output.read_text(encoding="utf-8"))
     joined = "\n".join(source(cell) for cell in generated["cells"])
     assert f"_DMC_CONTRAST_PROJECTIONS = {contrast_projections!r}" in joined
+    assert f"_DMC_CHILD_CODE_INDICES = {child_code_indices!r}" in joined
     assert "00e12e8b" not in joined
     for cell in generated["cells"]:
         if cell.get("cell_type") == "code":
@@ -192,11 +201,46 @@ def build(
     return output
 
 
+def decode_partial_contrast(
+    anchor_score: float,
+    scores: tuple[float, ...],
+    amplitude: float,
+    parent_code_indices: tuple[int, ...],
+) -> tuple[float, float, float, float]:
+    if len(scores) != len(parent_code_indices):
+        raise ValueError("partial scores and parent code indices must have equal length")
+    if len(set(parent_code_indices)) != len(parent_code_indices):
+        raise ValueError("partial parent code indices must be unique")
+    if not all(0 <= index < 4 for index in parent_code_indices):
+        raise ValueError("partial parent code indices must be in [0, 3]")
+    code_projection = np.asarray(
+        [
+            (score * score - anchor_score * anchor_score - amplitude * amplitude)
+            / (2.0 * amplitude)
+            for score in scores
+        ],
+        dtype=float,
+    )
+    selected_rows = np.asarray(
+        [
+            [1.0 if char == "+" else -1.0 for char in H4[index]]
+            for index in parent_code_indices
+        ],
+        dtype=float,
+    )
+    # Hadamard rows have norm squared four. Missing rows are assigned zero
+    # projection, giving the minimum-norm parent contrast estimate.
+    estimate = selected_rows.T @ code_projection / 4.0
+    return tuple(float(value) for value in estimate)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--anchor", type=float, required=True)
     parser.add_argument("--b1-scores", required=True)
     parser.add_argument("--b2-scores", required=True)
+    parser.add_argument("--b3-scores")
+    parser.add_argument("--b3-parent-code-indices", default="0,1,2")
     parser.add_argument("--amplitude", type=float, default=2.0)
     args = parser.parse_args()
 
@@ -204,11 +248,36 @@ def main() -> None:
     for index, raw_scores in ((1, args.b1_scores), (2, args.b2_scores)):
         scores = tuple(float(value.strip()) for value in raw_scores.split(","))
         decoded.append(decode_stage(args.anchor, scores, args.amplitude, index))
-    contrasts = tuple(
+    contrasts: tuple[tuple[float, ...], ...] = tuple(
         tuple(float(value) for value in item["parent_contrast_projection"])
         for item in decoded
     )
-    print(f"built and checked {build(contrasts)}")
+    child_code_indices = (1, 2)
+    if args.b3_scores:
+        b3_scores = tuple(float(value.strip()) for value in args.b3_scores.split(","))
+        b3_parent_indices = tuple(
+            int(value.strip()) for value in args.b3_parent_code_indices.split(",")
+        )
+        b3_contrast = decode_partial_contrast(
+            args.anchor,
+            b3_scores,
+            args.amplitude,
+            b3_parent_indices,
+        )
+        contrasts = contrasts + (b3_contrast,)
+        child_code_indices = (1, 2, 3)
+        print(
+            "partial b3 contrast:",
+            json.dumps(
+                {
+                    "parent_code_indices": b3_parent_indices,
+                    "parent_contrast_projection": b3_contrast,
+                    "missing_hadamard_projection_assumption": 0.0,
+                },
+                sort_keys=True,
+            ),
+        )
+    print(f"built and checked {build(contrasts, child_code_indices)}")
 
 
 if __name__ == "__main__":
