@@ -23,7 +23,11 @@ def leaf_code(parent_code: int, child_code: int) -> str:
     return "".join(signs)
 
 
-def datum16_cell(parent_code: int, child_code: int) -> dict:
+def datum16_cell(
+    parent_code: int,
+    child_code: int,
+    amplitude: float = AMPLITUDE,
+) -> dict:
     code = leaf_code(parent_code, child_code)
     source_code = f'''# Nested 16-bin row-balanced per-well datum Hadamard probe.
 import hashlib as _d16_hashlib
@@ -38,7 +42,7 @@ _D16_CHILD_CODE_INDEX = {child_code!r}
 _D16_PARENT_CODE = {H4[parent_code]!r}
 _D16_CHILD_CODE = {H4[child_code]!r}
 _D16_LEAF_CODE = {code!r}
-_D16_AMPLITUDE = {AMPLITUDE!r}
+_D16_AMPLITUDE = {amplitude!r}
 _D16_WORK = _D16Path('/kaggle/working') if _D16Path('/kaggle/working').exists() else _D16Path('.')
 _D16_SUB = _D16_WORK / 'submission.csv'
 

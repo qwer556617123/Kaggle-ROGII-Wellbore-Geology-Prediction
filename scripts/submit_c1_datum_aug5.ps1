@@ -11,8 +11,7 @@ $LogPath = Join-Path $LogDirectory "c1_datum_aug5.log"
 $StatePath = Join-Path $LogDirectory "c1_datum_aug5.completed"
 $StartAt = [DateTimeOffset]::Parse($NotBefore)
 
-# Deliberately submit four jobs. The fifth daily slot is reserved for the
-# partial-b3 calibrated deployment after these three probe scores arrive.
+# Final-day portfolio: every slot is a directly competitive candidate.
 $Jobs = @(
     @{
         Slug = "rogii-c1r8-d16-b12-calibrated"
@@ -21,22 +20,28 @@ $Jobs = @(
         Message = "joint rank8 datum plus b1 b2 contrast calibration"
     },
     @{
-        Slug = "rogii-c1r8-d16-a0b3"
-        Version = 2
-        Output = "kaggle\outputs\rogii-c1r8-d16-a0b3-v2"
-        Message = "datum16 b3 Hadamard code a0 amplitude2"
+        Slug = "rogii-c1r8-d16-b12-cap4"
+        Version = 1
+        Output = "kaggle\outputs\rogii-c1r8-d16-b12-cap4-v1"
+        Message = "aggressive b12 calibrated datum offset cap4"
     },
     @{
-        Slug = "rogii-c1r8-d16-a1b3"
-        Version = 2
-        Output = "kaggle\outputs\rogii-c1r8-d16-a1b3-v2"
-        Message = "datum16 b3 Hadamard code a1 amplitude2"
+        Slug = "rogii-c1r8-d16-b12-a0b3-probe"
+        Version = 1
+        Output = "kaggle\outputs\rogii-c1r8-d16-b12-a0b3-probe-v1"
+        Message = "competitive b12 plus b3 direction a0 amplitude1"
     },
     @{
-        Slug = "rogii-c1r8-d16-a2b3"
-        Version = 2
-        Output = "kaggle\outputs\rogii-c1r8-d16-a2b3-v2"
-        Message = "datum16 b3 Hadamard code a2 amplitude2"
+        Slug = "rogii-c1r8-d16-b12-a1b3-probe"
+        Version = 1
+        Output = "kaggle\outputs\rogii-c1r8-d16-b12-a1b3-probe-v1"
+        Message = "competitive b12 plus b3 direction a1 amplitude1"
+    },
+    @{
+        Slug = "rogii-c1r8-d16-b12-a2b3-probe"
+        Version = 1
+        Output = "kaggle\outputs\rogii-c1r8-d16-b12-a2b3-probe-v1"
+        Message = "competitive b12 plus b3 direction a2 amplitude1"
     }
 )
 
@@ -59,7 +64,7 @@ foreach ($Job in $Jobs) {
     }
 }
 
-Write-Log "worker ready; not-before=$($StartAt.ToString('o')) jobs=$($Jobs.Count) fifth-slot-reserved=true"
+Write-Log "worker ready; not-before=$($StartAt.ToString('o')) jobs=$($Jobs.Count) all-direct-candidates=true"
 while ([DateTimeOffset]::Now -lt $StartAt) {
     $remaining = ($StartAt - [DateTimeOffset]::Now).TotalSeconds
     Start-Sleep -Seconds ([Math]::Max(1, [Math]::Min(300, [Math]::Ceiling($remaining))))
@@ -101,4 +106,4 @@ foreach ($Job in $Jobs) {
 }
 
 Set-Content -LiteralPath $StatePath -Value ([DateTimeOffset]::Now.ToString("o")) -Encoding UTF8
-Write-Log "all four submissions accepted; fifth slot remains reserved"
+Write-Log "all five direct candidate submissions accepted"

@@ -1277,3 +1277,21 @@ Decision:
   builds and runs the partial `b123` notebook, audits its output, and only then
   uses the fifth competition slot. This avoids finishing the competition with
   measured but undeployed tomography coefficients.
+
+### 2026-08-05 - Final-day direct portfolio correction
+
+- Retired the four-probe-plus-finalizer schedule before any Aug 5 submissions.
+  On the final day, every slot must itself have a credible chance to remain the
+  best submission; measuring weak vectors creates unnecessary deadline risk.
+- Recentered the three independent `b3` directions on the calibrated `b12`
+  candidate and reduced their amplitude from `2 ft` to `1 ft`. Each vector is
+  now a direct near-anchor candidate while retaining orthogonal upside.
+- Added an aggressive `b12` frontier with the leaf offset cap relaxed from
+  `3 ft` to `4 ft`. This targets the clipping loss predicted by the decoded
+  quadratic while the cap-3 version remains the conservative fallback.
+- All four new notebooks completed in `271-458s`. The three directional
+  candidates semantically match the same b12 base, move every row by exactly
+  `+/-1 ft`, and have move MSE `1.0`; the cap-4 candidate is finite,
+  sample-aligned, and uses the expected rank-8 base SHA `10a6df68...`.
+- The final five-slot portfolio is cap-3 b12, cap-4 b12, and the three centered
+  b3 directions. No slot is reserved for post-score calibration.

@@ -35,6 +35,7 @@ def solve_parent_coefficients(
 def multistage_cell(
     child_code_indices: tuple[int, ...],
     contrast_projections: tuple[tuple[float, ...], ...],
+    offset_cap: float = OFFSET_CAP,
 ) -> dict:
     child_codes = tuple(H4[index] for index in child_code_indices)
     component_count = 1 + len(child_code_indices)
@@ -52,7 +53,7 @@ _DMC_CONTRAST_PROJECTIONS = {contrast_projections!r}
 _DMC_CHILD_CODE_INDICES = {child_code_indices!r}
 _DMC_CHILD_CODES = {child_codes!r}
 _DMC_COMPONENT_COUNT = {component_count!r}
-_DMC_OFFSET_CAP = {OFFSET_CAP!r}
+_DMC_OFFSET_CAP = {offset_cap!r}
 _DMC_WORK = _DmcPath('/kaggle/working') if _DmcPath('/kaggle/working').exists() else _DmcPath('.')
 _DMC_SUB = _DMC_WORK / 'submission.csv'
 
@@ -176,10 +177,13 @@ print('datum16 multistage audit:', _dmc_json.dumps(_DATUM16_MULTISTAGE_AUDIT, in
 def build(
     contrast_projections: tuple[tuple[float, ...], ...],
     child_code_indices: tuple[int, ...] = (1, 2),
+    offset_cap: float = OFFSET_CAP,
 ) -> Path:
     notebook = _load_base()
     notebook["cells"].append(c1_cell(1.0, bin_alphas=C1_ALPHAS, partition_mod=8))
-    notebook["cells"].append(multistage_cell(child_code_indices, contrast_projections))
+    notebook["cells"].append(
+        multistage_cell(child_code_indices, contrast_projections, offset_cap)
+    )
     stage_label = "".join(str(index) for index in child_code_indices)
     slug = f"rogii-c1r8-d16-b{stage_label}-calibrated"
     output = _write(
