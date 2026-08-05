@@ -1295,3 +1295,24 @@ Decision:
   sample-aligned, and uses the expected rank-8 base SHA `10a6df68...`.
 - The final five-slot portfolio is cap-3 b12, cap-4 b12, and the three centered
   b3 directions. No slot is reserved for post-score calibration.
+
+### 2026-08-06 - Final-hour sub-6 extrapolation
+
+- The five direct candidates scored `6.186` (b12 cap 3), `6.190` (b12 cap 4),
+  `6.245` (centered a0b3), `6.304` (centered a1b3), and `6.187` (centered
+  a2b3). Cap 3 remains the final scored best.
+- The three centered scores recover residual projections
+  `[-0.133286,+0.236910,-0.493813]` and an orthogonal calibrated prediction of
+  `6.1603`. This is a small reliable improvement but not a sub-6 wager.
+- The previously measured transform has negative diagonal dominance:
+  `a1b1=-1.419835` and `a2b2=-1.262582`. A final aggressive hypothesis assigns
+  the only unmeasured coefficient `a3b3=-1.50`, yielding coefficients
+  `[+0.133286,-0.236910,+0.493813,+1.50]` and a nominal score of `5.9749`.
+- Built and completed `rogii-c1r8-d16-b12-b3diag150` Version 1. Its output is
+  finite and sample-aligned, semantically matches the b12 base, uses all four
+  b3 directions without clipping, finishes in `342.75s`, and has final SHA
+  `3e5eb7cb...`.
+- The competition API rejected the formal submission with HTTP 400 because all
+  five UTC-day submission slots had already been accepted. The next quota
+  reset falls after the `2026-08-05 23:59 UTC` competition deadline, so the
+  diagonal extrapolation remains an audited but unscored final-hour artifact.

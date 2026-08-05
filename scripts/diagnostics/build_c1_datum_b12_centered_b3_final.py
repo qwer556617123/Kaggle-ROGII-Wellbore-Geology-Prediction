@@ -26,8 +26,13 @@ def solve_coefficients(gram: np.ndarray, projections: np.ndarray) -> np.ndarray:
     )
 
 
-def centered_final_cell(projections: tuple[float, ...]) -> dict:
-    codes = tuple(leaf_code(index, 3) for index in PARENT_CODE_INDICES)
+def centered_final_cell(
+    projections: tuple[float, ...],
+    parent_code_indices: tuple[int, ...] = PARENT_CODE_INDICES,
+) -> dict:
+    if len(projections) != len(parent_code_indices):
+        raise ValueError("projections and parent code indices must have equal length")
+    codes = tuple(leaf_code(index, 3) for index in parent_code_indices)
     cell_source = f'''# Calibrated competitive-probe correction around the b12 candidate.
 import hashlib as _bcf_hashlib
 import json as _bcf_json
@@ -37,7 +42,7 @@ import numpy as _bcf_np
 import pandas as _bcf_pd
 
 _BCF_PROJECTIONS = {projections!r}
-_BCF_PARENT_CODE_INDICES = {PARENT_CODE_INDICES!r}
+_BCF_PARENT_CODE_INDICES = {parent_code_indices!r}
 _BCF_LEAF_CODES = {codes!r}
 _BCF_MOVE_CAP = {MOVE_CAP!r}
 _BCF_WORK = _BcfPath('/kaggle/working') if _BcfPath('/kaggle/working').exists() else _BcfPath('.')
