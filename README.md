@@ -137,3 +137,9 @@ base notebook used by the final builders.
 The repository is now in post-competition maintenance mode. New work should be
 framed as reproducibility, retrospective analysis, or a reusable geosteering
 method, rather than another leaderboard submission variant.
+
+## License
+
+This repository's original source code is licensed under the [MIT License](LICENSE).
+Competition data, generated model artifacts, third-party materials, and
+trademarks remain subject to their respective terms.
